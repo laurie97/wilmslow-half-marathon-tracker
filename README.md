@@ -27,7 +27,7 @@ matched to planned sessions automatically.
   were due by today), cumulative distance run against the plan, and the fastest
   intervals, fastest tempo and longest run so far, plus a row of medals counting
   how many half marathons' worth you've run.
-- **Ralph.** The app's mascot, a raccoon in a race bib and running shoes
+- **Ralph.** The app's mascot, a raccoon in a race bib
   (`public/raccoon.svg`; his head is the favicon). He comments on your progress at the
   top of the progress page (`lib/ralph.ts`). Paces are whole-run averages,
   because only Strava's activity summaries are fetched.

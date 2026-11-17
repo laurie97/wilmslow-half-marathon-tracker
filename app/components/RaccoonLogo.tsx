@@ -1,4 +1,4 @@
-/** Ralph, the app's raccoon mascot, running in his race bib and shoes. */
+/** Ralph, the app's raccoon mascot, running in his race bib. */
 export default function RaccoonLogo({
   size,
   className = "",

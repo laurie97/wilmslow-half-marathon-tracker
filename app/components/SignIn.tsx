@@ -24,7 +24,7 @@ export default function SignIn({
       <div className="signin-card">
         <figure className="signin-mascot">
           <RaccoonLogo size={112} />
-          <figcaption className="muted small">Ralph is laced up and ready</figcaption>
+          <figcaption className="muted small">Ralph is warmed up and ready</figcaption>
         </figure>
         <p className="eyebrow">Training tracker</p>
         <h1>Wilmslow Half Marathon</h1>

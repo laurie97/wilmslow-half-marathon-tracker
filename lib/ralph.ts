@@ -10,7 +10,7 @@ export function ralphSays(runs: RunCounts): string {
   if (runs.total > 0 && ran >= runs.total) {
     message = "Every single run done. Ralph is speechless (and a bit emotional).";
   } else if (runs.due === 0) {
-    message = "Shoes laced, bib pinned. Ralph is ready for your first run!";
+    message = "Bib pinned, tail fluffed. Ralph is ready for your first run!";
   } else if (share >= 0.9) {
     message = `${ran} of ${runs.due} runs done so far. Ralph is seriously impressed!`;
   } else if (share >= 0.7) {
