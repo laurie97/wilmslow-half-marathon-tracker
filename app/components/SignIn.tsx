@@ -22,7 +22,10 @@ export default function SignIn({
   const page = (
     <main className="signin">
       <div className="signin-card">
-        <RaccoonLogo size={112} className="signin-logo" />
+        <figure className="signin-mascot">
+          <RaccoonLogo size={112} />
+          <figcaption className="muted small">Ralph is laced up and ready</figcaption>
+        </figure>
         <p className="eyebrow">Training tracker</p>
         <h1>Wilmslow Half Marathon</h1>
         <p className="muted">

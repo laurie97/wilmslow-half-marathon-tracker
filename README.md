@@ -26,7 +26,10 @@ matched to planned sessions automatically.
 - **Progress page.** A dial of runs done out of runs planned (with a tick for how many
   were due by today), cumulative distance run against the plan, and the fastest
   intervals, fastest tempo and longest run so far, plus a row of medals counting
-  how many half marathons' worth you've run. Paces are whole-run averages,
+  how many half marathons' worth you've run.
+- **Ralph.** The app's mascot, a raccoon in a race bib and running shoes
+  (`public/raccoon.svg`; his head is the favicon). He comments on your progress at the
+  top of the progress page (`lib/ralph.ts`). Paces are whole-run averages,
   because only Strava's activity summaries are fetched.
 - **Download / upload.** Download the plan with `status` and `actual` filled in, edit
   it elsewhere (e.g. with Claude), and upload it again. Progress is stored by session

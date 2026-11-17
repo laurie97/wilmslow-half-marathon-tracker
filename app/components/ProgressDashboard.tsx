@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { formatKm, formatPace, formatShortDate, stravaUrl } from "@/lib/format";
 import type { ProgressResponse } from "@/lib/progress";
+import { ralphSays } from "@/lib/ralph";
 import {
   halfMarathons,
   seasonStats,
@@ -52,10 +53,7 @@ export default function ProgressDashboard() {
       <Link href="/" className="back-link">
         ‹ This week
       </Link>
-      <div className="brand">
-        <RaccoonLogo size={40} />
-        <h1>How it’s going</h1>
-      </div>
+      <h1>How it’s going</h1>
     </header>
   );
 
@@ -81,6 +79,11 @@ export default function ProgressDashboard() {
     <main className="page">
       {header}
       {error && <ErrorCard error={error} onRetry={load} />}
+
+      <section className="ralph-says" aria-label="Ralph says">
+        <RaccoonLogo size={64} />
+        <p className="speech">{ralphSays(stats.runs)}</p>
+      </section>
 
       <section className="card panel">
         <h2>Runs done</h2>
