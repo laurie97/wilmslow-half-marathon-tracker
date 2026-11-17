@@ -1023,6 +1023,42 @@ a {
   background: #9ca2aa;
 }
 
+.line-goal {
+  background: repeating-linear-gradient(90deg, var(--muted) 0 4px, transparent 4px 7px);
+}
+
+.goal-line {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.prediction-summary {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.prediction-basis {
+  margin-top: 4px;
+}
+
+.prediction-empty {
+  margin-bottom: 10px;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.chart-axis-note {
+  margin-top: 2px;
+}
+
+.chart-note {
+  margin-top: 10px;
+}
+
 .chart-frame {
   position: relative;
 }
