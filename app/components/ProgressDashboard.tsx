@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { formatKm, formatPace, formatShortDate, stravaUrl } from "@/lib/format";
 import type { ProgressResponse } from "@/lib/progress";
 import {
+  halfMarathons,
   seasonStats,
   type BestRun,
   type DistancePoint,
@@ -100,6 +101,12 @@ export default function ProgressDashboard() {
       <p className="muted small bests-note">
         Paces are the average for the whole run, warm-up and recoveries included.
       </p>
+
+      <MedalCard
+        actualKm={stats.actualToDateKm}
+        plannedKm={stats.plannedTotalKm}
+        timeOnFeetS={stats.timeOnFeetS}
+      />
 
       <PoweredByStrava />
     </main>
@@ -494,4 +501,84 @@ function BestTile({
     </article>
   );
   return tile;
+}
+
+// Half marathons' worth -----------------------------------------------------
+
+const MEDAL_LIMIT = 40; // beyond this, the row would be too long to read
+
+/** "6 h 12 min" from seconds. */
+function formatHours(seconds: number): string {
+  const minutes = Math.round(seconds / 60);
+  const text =
+    minutes < 60
+      ? `${minutes} min`
+      : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+  return text;
+}
+
+/** One medal, filled from the bottom up by `fill` (0-1). */
+function Medal({ fill, id }: { fill: number; id: string }) {
+  const clipTop = 33 - 20 * fill; // the disc spans y = 13 to 33
+  const medal = (
+    <svg viewBox="0 0 32 36" className="medal" aria-hidden="true">
+      <path d="M9 1 L14 13 L18 13 L23 1 Z" className="medal-ribbon" />
+      <circle cx="16" cy="23" r="10" className="medal-empty" />
+      {fill > 0 && (
+        <>
+          <clipPath id={id}>
+            <rect x="0" y={clipTop} width="32" height={36 - clipTop} />
+          </clipPath>
+          <circle
+            cx="16"
+            cy="23"
+            r="10"
+            className="medal-gold"
+            clipPath={`url(#${id})`}
+          />
+        </>
+      )}
+      {fill >= 1 && (
+        <path
+          d="M16 17.5 l1.7 3.4 3.7 .5 -2.7 2.6 .7 3.7 -3.4 -1.8 -3.4 1.8 .7 -3.7 -2.7 -2.6 3.7 -.5 z"
+          className="medal-star"
+        />
+      )}
+    </svg>
+  );
+  return medal;
+}
+
+/** Distance run so far, counted in half marathons, as a row of medals. */
+function MedalCard(props: {
+  actualKm: number;
+  plannedKm: number;
+  timeOnFeetS: number;
+}) {
+  const done = halfMarathons(props.actualKm);
+  const planned = halfMarathons(props.plannedKm);
+  const slots = Math.min(Math.ceil(Math.max(done, planned, 1)), MEDAL_LIMIT);
+  const whole = Math.floor(done);
+  const label = `${done.toFixed(1)} half marathons run so far, of ${planned.toFixed(1)} in the whole plan.`;
+  const card = (
+    <section className="card panel medals-card">
+      <h2>Half marathons’ worth</h2>
+      <p>
+        <strong className="figure">{done.toFixed(1)}</strong> half marathons run
+      </p>
+      <p className="muted small">
+        {whole > 0
+          ? `That’s the Wilmslow Half ${whole === 1 ? "once" : whole === 2 ? "twice" : `${whole} times`} over`
+          : `${Math.round(done * 100)}% of the way to your first one`}
+        , in {formatHours(props.timeOnFeetS)} on your feet. The whole plan adds up to{" "}
+        {planned.toFixed(1)}.
+      </p>
+      <div className="medals" role="img" aria-label={label}>
+        {Array.from({ length: slots }, (_, i) => (
+          <Medal key={i} id={`medal-${i}`} fill={Math.min(Math.max(done - i, 0), 1)} />
+        ))}
+      </div>
+    </section>
+  );
+  return card;
 }

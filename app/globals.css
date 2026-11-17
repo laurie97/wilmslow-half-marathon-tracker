@@ -1181,3 +1181,40 @@ a {
 .bests-note {
   margin-top: 8px;
 }
+
+.medals-card {
+  margin-top: 12px;
+}
+
+.medals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.medal {
+  width: 30px;
+  height: 34px;
+}
+
+.medal-ribbon {
+  fill: var(--accent);
+  opacity: 0.85;
+}
+
+.medal-empty {
+  fill: #eceef0;
+  stroke: #d3d6db;
+  stroke-width: 1.5;
+}
+
+.medal-gold {
+  fill: #e9c046;
+  stroke: #b8901f;
+  stroke-width: 1.5;
+}
+
+.medal-star {
+  fill: #fff6d6;
+}

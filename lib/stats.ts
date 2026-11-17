@@ -26,6 +26,8 @@ export interface BestRun {
   activities: Activity[];
 }
 
+export const HALF_MARATHON_KM = 21.0975;
+
 export interface SeasonStats {
   runs: RunCounts;
   distance: DistancePoint[];
@@ -35,6 +37,7 @@ export interface SeasonStats {
   fastestIntervals: BestRun | null;
   fastestTempo: BestRun | null;
   longestRun: BestRun | null;
+  timeOnFeetS: number; // moving time of every run in the plan so far
 }
 
 function round1(km: number): number {
@@ -170,6 +173,15 @@ export function seasonStats(weeks: WeekResult[], today: string): SeasonStats {
     fastestIntervals: fastestSession(weeks, "intervals"),
     fastestTempo: fastestSession(weeks, "tempo"),
     longestRun: longestRun(weeks),
+    timeOnFeetS: weeks
+      .flatMap((w) => w.runs)
+      .reduce((acc, a) => acc + a.movingTimeS, 0),
   };
   return stats;
+}
+
+/** How many half marathons a distance is worth (e.g. 2.33). */
+export function halfMarathons(km: number): number {
+  const count = km / HALF_MARATHON_KM;
+  return count;
 }

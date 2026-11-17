@@ -4,6 +4,7 @@ import {
   countRuns,
   cumulativeDistance,
   fastestSession,
+  halfMarathons,
   longestRun,
   seasonStats,
 } from "../lib/stats";
@@ -141,5 +142,17 @@ describe("planned distance to date", () => {
     const stats = seasonStats(weeks, "2026-11-24");
     expect(stats.expectedToDateKm).toBe(27);
     expect(stats.actualToDateKm).toBe(31.7);
+  });
+});
+
+describe("half marathons' worth", () => {
+  it("converts km to half marathons", () => {
+    expect(halfMarathons(42.195)).toBeCloseTo(2, 5);
+  });
+
+  it("totals time on feet for every run so far", () => {
+    const stats = seasonStats(weeks, TODAY);
+    const expected = activities.reduce((acc, a) => acc + a.movingTimeS, 0);
+    expect(stats.timeOnFeetS).toBe(expected);
   });
 });

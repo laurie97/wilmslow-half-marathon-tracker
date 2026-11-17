@@ -25,7 +25,8 @@ matched to planned sessions automatically.
   grey for future weeks. Tap a square to jump to that week.
 - **Progress page.** A dial of runs done out of runs planned (with a tick for how many
   were due by today), cumulative distance run against the plan, and the fastest
-  intervals, fastest tempo and longest run so far. Paces are whole-run averages,
+  intervals, fastest tempo and longest run so far, plus a row of medals counting
+  how many half marathons' worth you've run. Paces are whole-run averages,
   because only Strava's activity summaries are fetched.
 - **Download / upload.** Download the plan with `status` and `actual` filled in, edit
   it elsewhere (e.g. with Claude), and upload it again. Progress is stored by session
