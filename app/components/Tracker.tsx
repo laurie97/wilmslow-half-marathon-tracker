@@ -8,6 +8,7 @@ import type { SessionResult, WeekResult } from "@/lib/types";
 import ErrorCard, { type ApiError } from "./ErrorCard";
 import PlanMenu from "./PlanMenu";
 import PoweredByStrava from "./PoweredByStrava";
+import RaccoonLogo from "./RaccoonLogo";
 import SessionSheet from "./SessionSheet";
 import WeekView from "./WeekView";
 
@@ -99,12 +100,15 @@ export default function Tracker() {
     <main className="page">
       <header className="top">
         <div className="top-row">
-          <div>
-            <p className="eyebrow">
-              {data.athlete.firstname || "Signed in"}
-              {data.demo && <span className="demo-tag">demo</span>}
-            </p>
-            <h1>{plan?.raceName ?? "Wilmslow Half Marathon"}</h1>
+          <div className="brand">
+            <RaccoonLogo size={48} />
+            <div>
+              <p className="eyebrow">
+                {data.athlete.firstname || "Signed in"}
+                {data.demo && <span className="demo-tag">demo</span>}
+              </p>
+              <h1>{plan?.raceName ?? "Wilmslow Half Marathon"}</h1>
+            </div>
           </div>
           <form action="/api/auth/logout" method="post">
             <button type="submit" className="link-button">

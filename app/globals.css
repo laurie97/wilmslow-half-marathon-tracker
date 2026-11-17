@@ -1218,3 +1218,25 @@ a {
 .medal-star {
   fill: #fff6d6;
 }
+
+/* Mascot ----------------------------------------------------------------- */
+
+.raccoon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.top-row .link-button {
+  white-space: nowrap;
+}
+
+.signin-logo {
+  margin: -8px auto -4px;
+}

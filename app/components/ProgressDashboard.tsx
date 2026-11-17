@@ -13,6 +13,7 @@ import {
 } from "@/lib/stats";
 import ErrorCard, { type ApiError } from "./ErrorCard";
 import PoweredByStrava from "./PoweredByStrava";
+import RaccoonLogo from "./RaccoonLogo";
 
 /** The progress page: runs dial, cumulative distance and best runs. */
 export default function ProgressDashboard() {
@@ -51,7 +52,10 @@ export default function ProgressDashboard() {
       <Link href="/" className="back-link">
         ‹ This week
       </Link>
-      <h1>How it’s going</h1>
+      <div className="brand">
+        <RaccoonLogo size={40} />
+        <h1>How it’s going</h1>
+      </div>
     </header>
   );
 
