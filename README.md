@@ -27,6 +27,9 @@ matched to planned sessions automatically.
   were due by today), cumulative distance run against the plan, and the fastest
   intervals, fastest tempo and longest run so far, plus a row of medals counting
   how many half marathons' worth you've run.
+- **Race prediction.** At the top of the progress page: the half marathon time you'd
+  run if you raced today, how far it is from your goal, and a chart of how the
+  prediction has moved over the plan. It updates as you add runs (see below).
 - **Ralph.** The app's mascot, a raccoon in a race bib
   (`public/raccoon.svg`; his head is the favicon). He comments on your progress at the
   top of the progress page (`lib/ralph.ts`). Paces are whole-run averages,
@@ -53,6 +56,24 @@ always count as done), otherwise **partial**. Unmatched sessions stay **upcoming
 until the week ends, then become **missed**. Runs that match nothing are listed as
 "Other runs this week". The rules live in `lib/matching.ts` and are covered by
 `tests/matching.test.ts`.
+
+### How the race prediction works
+
+It's an estimate from your training, not a Strava figure (`lib/prediction.ts`,
+covered by `tests/prediction.test.ts`):
+
+1. **Speed:** every run of at least 3 km in the last 8 weeks is scaled to 21.1 km with
+   Riegel's formula, _T₂ = T₁ × (D₂ / D₁)^1.06_, using its moving time. The fastest
+   result is the prediction, so it's usually set by a parkrun, time trial or tempo.
+   (A 20:45 5k gives 1:35:27, in line with the plan's February checkpoint.)
+2. **Endurance:** Riegel assumes you're trained for the distance. While your longest
+   run in the same 8 weeks is under 16 km, the exponent rises towards 1.09 (reached at
+   8 km or less), adding a few minutes. Building the long run brings the prediction
+   down even without a fast run.
+
+Runs from the 8 weeks before the plan starts are fetched too, so there's a prediction
+from day one. Paces are whole-run averages (only activity summaries are fetched), so
+a hard session diluted by its warm-up counts for less than a parkrun.
 
 ## Running locally
 
@@ -166,6 +187,7 @@ app/                 Next.js App Router pages, components and API routes
 lib/matching.ts      Matching rules (pure, unit-tested)
 lib/plan.ts          Plan validation and export
 lib/stats.ts         Progress page figures (pure, unit-tested)
+lib/prediction.ts    Half marathon prediction (pure, unit-tested)
 lib/strava.ts        Strava API client
 lib/db.ts            Neon Postgres store (and in-memory store for demo mode)
 lib/session.ts       Signed session cookie

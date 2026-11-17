@@ -76,7 +76,8 @@ const NAMES: Record<string, string> = {
  * Generates fake activities for every run session before `today`, with a few
  * deliberate quirks: in the second week the intervals are missed, the tempo is
  * moved, a time trial (if any) is split in three and the long run is short; later weeks get a short
- * extra jog. Rides and walks are thrown in to check they are ignored.
+ * extra jog. Rides and walks are thrown in to check they are ignored. The eight
+ * weeks before the plan get easy runs and a weekly parkrun, for the prediction.
  */
 export function demoActivities(plan: Plan, today: string): Activity[] {
   const activities: Activity[] = [];
@@ -88,8 +89,9 @@ export function demoActivities(plan: Plan, today: string): Activity[] {
     type: string,
     name: string,
     sportType = "Run",
+    paceS?: number,
   ): void => {
-    const pace = PACE_S_PER_KM[type] ?? 390;
+    const pace = paceS ?? PACE_S_PER_KM[type] ?? 390;
     const activity: Activity = {
       id: nextId++,
       name,
@@ -104,6 +106,16 @@ export function demoActivities(plan: Plan, today: string): Activity[] {
       activities.push(activity);
     }
   };
+
+  const start = plan.weeks[0].week_commencing;
+  for (let ago = 8; ago >= 1; ago--) {
+    const monday = addDays(start, -7 * ago);
+    const parkrunS = 1325 + ago * 5; // a few seconds quicker each week
+    add(addDays(monday, 1), "07:00", 6.1, "easy", "Morning Run");
+    add(addDays(monday, 3), "07:00", 5.4, "tempo", "Morning Run", "Run", 290);
+    add(addDays(monday, 5), "09:00", 5.0, "time_trial", "parkrun", "Run", parkrunS / 5);
+    add(addDays(monday, 6), "09:30", ago % 2 ? 8.2 : 10.1, "easy", "Sunday run");
+  }
 
   plan.weeks.forEach((week, index) => {
     const messy = index === 1;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { formatKm, formatPace, formatShortDate, stravaUrl } from "@/lib/format";
+import { parseRaceTime, predictHalf, predictionSeries } from "@/lib/prediction";
 import type { ProgressResponse } from "@/lib/progress";
 import { ralphSays } from "@/lib/ralph";
 import {
@@ -12,8 +13,10 @@ import {
   type DistancePoint,
   type RunCounts,
 } from "@/lib/stats";
+import { CHART, PLOT_H, indexAt, niceStep, weekTicks, xAt } from "./chart";
 import ErrorCard, { type ApiError } from "./ErrorCard";
 import PoweredByStrava from "./PoweredByStrava";
+import PredictionCard from "./PredictionCard";
 import RaccoonLogo from "./RaccoonLogo";
 
 /** The progress page: runs dial, cumulative distance and best runs. */
@@ -75,6 +78,13 @@ export default function ProgressDashboard() {
   }
 
   const stats = seasonStats(data.weeks, data.today);
+  const allRuns = [...data.earlierRuns, ...data.weeks.flatMap((w) => w.runs)];
+  const predictions = predictionSeries(
+    allRuns,
+    data.weeks[0].weekCommencing,
+    data.weeks[data.weeks.length - 1].weekEnding,
+    data.today,
+  );
   const page = (
     <main className="page">
       {header}
@@ -84,6 +94,14 @@ export default function ProgressDashboard() {
         <RaccoonLogo size={64} />
         <p className="speech">{ralphSays(stats.runs)}</p>
       </section>
+
+      <PredictionCard
+        current={predictHalf(allRuns, data.today)}
+        points={predictions}
+        today={data.today}
+        goalS={parseRaceTime(data.plan.goalTime)}
+        goalLabel={data.plan.goalTime}
+      />
 
       <section className="card panel">
         <h2>Runs done</h2>
@@ -239,17 +257,6 @@ function DistanceSummary(props: { actual: number; expected: number; total: numbe
   return summary;
 }
 
-const CHART = { width: 340, height: 200, left: 34, right: 12, top: 12, bottom: 24 };
-
-/** A clean axis step giving roughly four ticks up to `max`. */
-function niceStep(max: number): number {
-  const raw = Math.max(max, 1) / 4;
-  const magnitude = 10 ** Math.floor(Math.log10(raw));
-  const step =
-    [1, 2, 2.5, 5, 10].map((m) => m * magnitude).find((s) => s >= raw) ?? raw;
-  return step;
-}
-
 /** Cumulative km run against cumulative km planned, one point per day. */
 function DistanceChart({ points, today }: { points: DistancePoint[]; today: string }) {
   const [hover, setHover] = useState<number | null>(null);
@@ -260,10 +267,8 @@ function DistanceChart({ points, today }: { points: DistancePoint[]; today: stri
   );
   const step = niceStep(maxKm);
   const top = Math.ceil(maxKm / step) * step;
-  const plotW = CHART.width - CHART.left - CHART.right;
-  const plotH = CHART.height - CHART.top - CHART.bottom;
-  const x = (i: number): number => CHART.left + (n > 1 ? (i / (n - 1)) * plotW : 0);
-  const y = (km: number): number => CHART.top + plotH - (km / top) * plotH;
+  const x = (i: number): number => xAt(i, n);
+  const y = (km: number): number => CHART.top + PLOT_H - (km / top) * PLOT_H;
   const baseline = y(0);
 
   const expectedPath = points
@@ -287,19 +292,12 @@ function DistanceChart({ points, today }: { points: DistancePoint[]; today: stri
 
   const yTicks: number[] = [];
   for (let km = 0; km <= top + 1e-9; km += step) yTicks.push(km);
-  const weekStarts = points
-    .map((p, i) => ({ date: p.date, i }))
-    .filter((_, i) => i % 7 === 0);
-  const every = Math.max(1, Math.ceil(weekStarts.length / 5));
-  const xTicks = weekStarts.filter((_, k) => k % every === 0);
+  const xTicks = weekTicks(points.map((p) => p.date));
   const todayIndex = points.findIndex((p) => p.date === today);
 
   /** Snaps the crosshair to the nearest day under the pointer. */
   const onMove = (event: React.PointerEvent<SVGSVGElement>): void => {
-    const box = event.currentTarget.getBoundingClientRect();
-    const svgX = ((event.clientX - box.left) / box.width) * CHART.width;
-    const index = Math.round(((svgX - CHART.left) / plotW) * (n - 1));
-    setHover(Math.min(n - 1, Math.max(0, index)));
+    setHover(indexAt(event, n));
   };
   const hovered = hover !== null ? points[hover] : null;
   const tipLeft = hover !== null ? (x(hover) / CHART.width) * 100 : 0;

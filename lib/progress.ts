@@ -3,7 +3,8 @@
 import { appTimezone, isDemo } from "./config";
 import { addDays, epochSeconds, todayIn } from "./dates";
 import { getStore, type AthleteRecord, type PlanRecord, type Store } from "./db";
-import { matchPlan } from "./matching";
+import { isRunActivity, matchPlan } from "./matching";
+import { WINDOW_DAYS } from "./prediction";
 import { fetchActivities, validAccessToken } from "./strava";
 import type { Activity, Exercise, Override, Plan, WeekResult } from "./types";
 
@@ -25,6 +26,7 @@ export interface ProgressResponse {
   demo: boolean;
   plan: PlanSummary | null;
   weeks: WeekResult[];
+  earlierRuns: Activity[]; // runs in the 8 weeks before the plan, for the prediction
 }
 
 export interface AthleteContext {
@@ -69,7 +71,10 @@ export async function loadContext(athleteId: number): Promise<AthleteContext> {
   return context;
 }
 
-/** Fetches the athlete's activities live from Strava for the plan's date range. */
+/**
+ * Fetches the athlete's activities live from Strava for the plan's date range,
+ * plus the 8 weeks before it so the race prediction has history from day one.
+ */
 export async function loadActivities(
   ctx: AthleteContext,
   plan: Plan,
@@ -85,7 +90,7 @@ export async function loadActivities(
     // Pad by a day each side: Strava filters on UTC start time.
     activities = await fetchActivities(
       token,
-      epochSeconds(addDays(first, -1)),
+      epochSeconds(addDays(first, -WINDOW_DAYS - 1)),
       epochSeconds(addDays(last, 2)),
     );
   }
@@ -155,13 +160,21 @@ export function summarisePlan(record: PlanRecord): PlanSummary {
 export async function buildProgress(athleteId: number): Promise<ProgressResponse> {
   const ctx = await loadContext(athleteId);
   const record = ctx.planRecord;
-  const weeks = record ? await computeWeeks(ctx, record.plan) : [];
+  let weeks: WeekResult[] = [];
+  let earlierRuns: Activity[] = [];
+  if (record) {
+    const activities = await loadActivities(ctx, record.plan);
+    weeks = matchPlan(record.plan, activities, ctx.overrides, ctx.today);
+    const start = record.plan.weeks[0].week_commencing;
+    earlierRuns = activities.filter((a) => isRunActivity(a) && a.date < start);
+  }
   const progress: ProgressResponse = {
     athlete: { firstname: ctx.athlete.firstname },
     today: ctx.today,
     demo: isDemo(),
     plan: record ? summarisePlan(record) : null,
     weeks,
+    earlierRuns,
   };
   return progress;
 }
