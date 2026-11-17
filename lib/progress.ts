@@ -120,12 +120,22 @@ function block(value: Plan["warm_up"]): PlanSummary["warmUp"] {
   return result;
 }
 
+/** "race_week" -> "Race week". */
+function routineName(key: string): string {
+  const words = key.replace(/_/g, " ");
+  const name = words.charAt(0).toUpperCase() + words.slice(1);
+  return name;
+}
+
 /** The plan details the page shows (race, goal, routines, warm-up text). */
 export function summarisePlan(record: PlanRecord): PlanSummary {
   const plan = record.plan;
   const routines: PlanSummary["strengthRoutines"] = {};
   for (const [key, routine] of Object.entries(plan.strength?.routines ?? {})) {
-    routines[key] = { name: routine?.name ?? key, exercises: routine?.exercises ?? [] };
+    routines[key] = {
+      name: routine?.name ?? routineName(key),
+      exercises: routine?.exercises ?? [],
+    };
   }
   const summary: PlanSummary = {
     planId: plan.plan_id ?? null,
