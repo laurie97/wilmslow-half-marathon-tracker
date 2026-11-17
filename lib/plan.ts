@@ -164,7 +164,7 @@ export function exportActual(matched: Activity[]): Record<string, unknown> | nul
     avg_pace_s_per_km: distanceKm > 0 ? Math.round(durationS / distanceKm) : null,
     avg_hr: avgHr,
     rpe: null,
-    strava_activity_id: ids.length === 1 ? ids[0] : ids.join(","),
+    strava_activity_id: ids.join(","), // a string, as in the plan's tracking schema
     notes: null,
   };
   return actual;

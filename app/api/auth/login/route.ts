@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { cookieOptions } from "@/lib/auth";
 import { isDemo, sessionSecret } from "@/lib/config";
+import { appOrigin } from "@/lib/origin";
 import {
   SESSION_COOKIE,
   SESSION_MAX_AGE_S,
@@ -12,7 +13,7 @@ import { authorizeUrl } from "@/lib/strava";
 
 /** Redirects to Strava's authorize page with a random state saved in a cookie. */
 export async function GET(request: NextRequest) {
-  const origin = request.nextUrl.origin;
+  const origin = appOrigin(request);
   let response: NextResponse;
   if (isDemo()) {
     // Demo mode skips Strava and signs in as the demo athlete.
