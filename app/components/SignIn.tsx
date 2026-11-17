@@ -1,4 +1,5 @@
 import PoweredByStrava from "./PoweredByStrava";
+import RaccoonLogo from "./RaccoonLogo";
 
 const ERRORS: Record<string, string> = {
   denied: "Strava access wasn't granted. Please try again.",
@@ -21,6 +22,10 @@ export default function SignIn({
   const page = (
     <main className="signin">
       <div className="signin-card">
+        <figure className="signin-mascot">
+          <RaccoonLogo size={112} />
+          <figcaption className="muted small">Ralph is warmed up and ready</figcaption>
+        </figure>
         <p className="eyebrow">Training tracker</p>
         <h1>Wilmslow Half Marathon</h1>
         <p className="muted">

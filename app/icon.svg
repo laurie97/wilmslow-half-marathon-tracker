@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="29.5 7 29 29">
+  <!-- ears -->
+  <circle cx="35.5" cy="13.5" r="4.6" fill="#8a837e" />
+  <circle cx="35.8" cy="13.8" r="2.7" fill="#e6dfd9" />
+  <circle cx="52.5" cy="13.5" r="4.6" fill="#8a837e" />
+  <circle cx="52.2" cy="13.8" r="2.7" fill="#e6dfd9" />
+  <!-- head -->
+  <circle cx="44" cy="22.5" r="11.5" fill="#7a7470" />
+  <!-- cream eyebrows curving round the eye patches -->
+  <g fill="none" stroke="#ece5df" stroke-width="3" stroke-linecap="round">
+    <path d="M35.6 26.5 Q34.6 17.8 41.6 17.4" />
+    <path d="M52.4 26.5 Q53.4 17.8 46.4 17.4" />
+  </g>
+  <!-- eye patches and eyes -->
+  <ellipse cx="40.2" cy="22.8" rx="3.5" ry="4.6" transform="rotate(22 40.2 22.8)" fill="#524b47" />
+  <ellipse cx="47.8" cy="22.8" rx="3.5" ry="4.6" transform="rotate(-22 47.8 22.8)" fill="#524b47" />
+  <circle cx="41.3" cy="22" r="1.35" fill="#111" />
+  <circle cx="46.7" cy="22" r="1.35" fill="#111" />
+  <circle cx="41.7" cy="21.6" r="0.45" fill="#fff" />
+  <circle cx="47.1" cy="21.6" r="0.45" fill="#fff" />
+  <!-- snout, nose and mouth -->
+  <circle cx="44" cy="28" r="5.4" fill="#ece5df" />
+  <path d="M41.4 25.3 Q44 24 46.6 25.3 Q46.2 28 44 28.9 Q41.8 28 41.4 25.3 Z" fill="#4b2a24" />
+  <path d="M44 28.9 L44 30.3 M42.6 30.8 Q44 31.6 45.4 30.8" fill="none" stroke="#4b2a24" stroke-width="0.8" stroke-linecap="round" />
+</svg>

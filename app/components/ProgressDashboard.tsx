@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { formatKm, formatPace, formatShortDate, stravaUrl } from "@/lib/format";
 import type { ProgressResponse } from "@/lib/progress";
+import { ralphSays } from "@/lib/ralph";
 import {
   halfMarathons,
   seasonStats,
@@ -13,6 +14,7 @@ import {
 } from "@/lib/stats";
 import ErrorCard, { type ApiError } from "./ErrorCard";
 import PoweredByStrava from "./PoweredByStrava";
+import RaccoonLogo from "./RaccoonLogo";
 
 /** The progress page: runs dial, cumulative distance and best runs. */
 export default function ProgressDashboard() {
@@ -77,6 +79,11 @@ export default function ProgressDashboard() {
     <main className="page">
       {header}
       {error && <ErrorCard error={error} onRetry={load} />}
+
+      <section className="ralph-says" aria-label="Ralph says">
+        <RaccoonLogo size={64} />
+        <p className="speech">{ralphSays(stats.runs)}</p>
+      </section>
 
       <section className="card panel">
         <h2>Runs done</h2>
