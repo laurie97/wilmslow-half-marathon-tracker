@@ -68,14 +68,14 @@ const NAMES: Record<string, string> = {
   intervals: "Track reps",
   tempo: "Tempo run",
   easy: "Morning Run",
-  long_run: "Sunday long run",
+  long_run: "Long run",
   race: "Race",
 };
 
 /**
  * Generates fake activities for every run session before `today`, with a few
- * deliberate quirks: in the second week one run is missed, one is moved, the
- * parkrun is split in three and the long run is short; later weeks get a short
+ * deliberate quirks: in the second week the intervals are missed, the tempo is
+ * moved, a time trial (if any) is split in three and the long run is short; later weeks get a short
  * extra jog. Rides and walks are thrown in to check they are ignored.
  */
 export function demoActivities(plan: Plan, today: string): Activity[] {
@@ -153,7 +153,7 @@ function addSession(session: PlanSession, messy: boolean, add: AddFn): void {
     }
     return;
   }
-  if (messy && session.type === "easy" && session.day === "Wednesday") {
+  if (messy && session.type === "intervals") {
     return; // missed
   }
   if (messy && session.type === "tempo") {

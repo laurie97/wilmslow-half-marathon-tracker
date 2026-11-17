@@ -34,16 +34,16 @@ async function main() {
   await shot(page, "2-current-week");
 
   await page.getByRole("button", { name: "Previous week" }).click();
-  await page.waitForSelector("text=Week 2");
+  await page.waitForSelector("text=Week 1");
   await shot(page, "3-past-week");
 
-  await page.locator(".session-main", { hasText: "tempo" }).first().click();
+  await page.locator(".session-main", { hasText: "@ 4:40" }).first().click();
   await page.waitForSelector(".sheet");
   await page.screenshot({ path: `${OUT_DIR}/4-run-sheet.png` });
   console.log(`saved ${OUT_DIR}/4-run-sheet.png`);
   await page.getByRole("button", { name: "Close" }).click();
 
-  await page.locator(".session-main", { hasText: "Strength (main)" }).first().click();
+  await page.locator(".session-main", { hasText: "Strength - main" }).first().click();
   await page.waitForSelector(".sheet");
   await page.screenshot({ path: `${OUT_DIR}/5-strength-sheet.png` });
   console.log(`saved ${OUT_DIR}/5-strength-sheet.png`);

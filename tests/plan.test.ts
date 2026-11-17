@@ -25,7 +25,7 @@ describe("validatePlan", () => {
 
   it("rejects duplicate ids, bad dates and missing fields", () => {
     const raw = clone() as unknown as Plan;
-    const sessions = raw.weeks[0].sessions;
+    const sessions = raw.weeks[1].sessions;
     sessions[1].id = sessions[0].id;
     sessions[2].date = "2026-11-31";
     delete (sessions[3] as Record<string, unknown>).title;
@@ -56,8 +56,8 @@ describe("exportPlan", () => {
       {
         id: 101,
         name: "Reps",
-        date: "2026-11-17",
-        startLocal: "2026-11-17T07:00:00",
+        date: "2026-11-19",
+        startLocal: "2026-11-19T07:00:00",
         sportType: "Run",
         distanceKm: 6.2,
         movingTimeS: 2108,
@@ -65,31 +65,31 @@ describe("exportPlan", () => {
       },
       {
         id: 102,
-        name: "Tempo",
-        date: "2026-11-20", // Friday: moved from Thursday
-        startLocal: "2026-11-20T07:00:00",
+        name: "Long run",
+        date: "2026-11-22", // Sunday: moved from Saturday
+        startLocal: "2026-11-22T08:30:00",
         sportType: "Run",
-        distanceKm: 7.1,
-        movingTimeS: 2343,
-        avgHr: 163,
+        distanceKm: 12.6,
+        movingTimeS: 4410,
+        avgHr: 145,
       },
     ];
     const weeks = matchPlan(plan, runs, [], "2026-11-25");
     const exported = exportPlan(plan, weeks);
-    const week1 = exported.weeks[0].sessions;
-    const byId = new Map(week1.map((s) => [s.id, s]));
-    expect(byId.get("w01-tue-intervals")?.status).toBe("done");
-    expect(byId.get("w01-thu-tempo")?.status).toBe("moved");
-    expect(byId.get("w01-wed-easy")?.status).toBe("skipped");
-    expect(byId.get("w01-wed-easy")?.actual).toBeNull();
-    expect(byId.get("w01-tue-intervals")?.actual).toEqual({
-      date: "2026-11-17",
+    const week0 = exported.weeks[0].sessions;
+    const byId = new Map(week0.map((s) => [s.id, s]));
+    expect(byId.get("w00-thu-tempo")?.status).toBe("done");
+    expect(byId.get("w00-sat-long_run")?.status).toBe("moved");
+    expect(byId.get("w00-wed-strength")?.status).toBe("skipped");
+    expect(byId.get("w00-wed-strength")?.actual).toBeNull();
+    expect(byId.get("w00-thu-tempo")?.actual).toEqual({
+      date: "2026-11-19",
       distance_km: 6.2,
       duration_s: 2108,
       avg_pace_s_per_km: 340,
       avg_hr: 158,
       rpe: null,
-      strava_activity_id: 101,
+      strava_activity_id: "101",
       notes: null,
     });
     expect(exported.weeks[1].sessions[0].status).toBe("planned");
