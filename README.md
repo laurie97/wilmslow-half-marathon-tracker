@@ -57,8 +57,9 @@ npm run demo        # demo mode on http://localhost:3000
 
 **Demo mode** (`DEMO_MODE=1`) needs no Strava app or database: it uses an in-memory
 store, a fixture plan (`data/demo-plan.json`) and generated fake runs. Set
-`DEMO_TODAY=2026-12-03` (the default) to pretend it's a different day. Demo mode
-never switches on in a Vercel deployment.
+`DEMO_TODAY=2026-12-03` (the default) to pretend it's a different day. Demo mode never
+switches on in a hosted deployment: it requires that neither `NETLIFY` nor `VERCEL` is
+set, and those flags are also baked in at build time.
 
 To run against real Strava and Neon locally, copy `.env.example` to `.env.local`, fill
 it in, add `localhost` as the callback domain in your Strava API settings, and run
@@ -74,19 +75,32 @@ Other scripts:
 | `npm run format`      | Prettier (print width 88)                               |
 | `npm run screenshots` | Playwright screenshots at 390px (start demo mode first) |
 
-## Setup (after merging)
+## Setup on Netlify (after merging)
 
-1. **Vercel:** sign up with GitHub, import this repo and deploy. Note the
-   `*.vercel.app` URL.
-2. **Vercel → Storage → Neon (free) → connect to the project.** This adds
-   `DATABASE_URL`. Tables are created automatically on first use.
+The app runs on Netlify's free plan with no extra config: Netlify detects Next.js and
+applies its Next.js runtime automatically, so there's no `netlify.toml`.
+
+1. **Netlify:** sign up with GitHub, then **Add new site → Import an existing project →
+   GitHub** and pick this repo. Keep the detected build settings and deploy. Note the
+   `*.netlify.app` URL. (To choose a nicer name, change it now under **Site
+   configuration → Change site name**, because Strava needs the final domain.)
+2. **Database:** either
+   - add **Netlify's built-in database (Netlify DB)** to the site. It sets
+     `NETLIFY_DATABASE_URL`, which the app reads automatically. If Netlify asks you to
+     claim the database with a Neon account, do it so the database is kept; or
+   - create a free project at **https://neon.com**, copy its connection string and add
+     it as `DATABASE_URL` in step 4.
+
+   Tables are created automatically on first use.
+
 3. **https://www.strava.com/settings/api:** create an app.
-   - Category: Training. Website: the Vercel URL.
-   - Authorization Callback Domain: the bare `*.vercel.app` domain, without
-     `https://`.
+   - Category: Training. Website: the Netlify URL.
+   - Authorization Callback Domain: the bare `*.netlify.app` domain (e.g.
+     `wilmslow-half.netlify.app`), without `https://`.
    - Upload an icon, then raise the capacity to 10 athletes.
-4. **Vercel → Settings → Environment Variables:** add the variables below, then
-   redeploy.
+4. **Netlify → Site configuration → Environment variables:** add the variables below,
+   then redeploy (**Deploys → Trigger deploy → Deploy site**), because new variables
+   only apply to new deploys.
 5. Open the app, connect Strava (tick "View data about your private activities"),
    upload the plan and check the matches.
 6. Send Rachel the link.
@@ -101,11 +115,11 @@ Other scripts:
 | `ALLOWED_ATHLETE_IDS`  | Comma-separated Strava athlete IDs (the number in your Strava profile URL)                                       |
 | `APP_TIMEZONE`         | Default `Europe/London`; decides what "today" is                                                                 |
 | `STRAVA_API_BASE`      | Default `https://www.strava.com/api/v3`. Strava's new base URL `https://api-v3.strava.com` arrives on 4 Jan 2027 |
-| `DATABASE_URL`         | Added by the Neon integration (`POSTGRES_URL` also works)                                                        |
+| `DATABASE_URL`         | Neon connection string. Not needed with Netlify DB, which sets `NETLIFY_DATABASE_URL` (also read)                |
 
-> **Preview deployments:** Strava only redirects back to the callback domain set in
-> its API settings, so sign-in works on the production domain only, not on Vercel
-> preview URLs.
+> **Deploy previews:** Strava only redirects back to the callback domain set in its API
+> settings, so sign-in works on the main `*.netlify.app` domain only, not on deploy
+> previews or branch deploys (`deploy-preview-1--yoursite.netlify.app` and so on).
 
 ## How data is handled
 

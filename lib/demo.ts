@@ -1,5 +1,5 @@
 // Demo mode: a fixture plan, generated fake runs and a fake "today".
-// Only used when DEMO_MODE=1 and not running on Vercel (see config.isDemo).
+// Only used when DEMO_MODE=1 and not in a hosted deployment (see config.isDemo).
 
 import demoPlan from "../data/demo-plan.json";
 import { addDays } from "./dates";

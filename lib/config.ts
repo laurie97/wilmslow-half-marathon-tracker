@@ -3,9 +3,14 @@
 export const DEFAULT_STRAVA_API_BASE = "https://www.strava.com/api/v3";
 export const STRAVA_OAUTH_BASE = "https://www.strava.com/oauth";
 
-/** Demo mode: local only, never on a Vercel deployment. */
+/**
+ * Demo mode: local only, never in a hosted deployment. Netlify and Vercel set
+ * NETLIFY / VERCEL; next.config.ts also bakes them into the build, so the guard
+ * holds even where a flag is only set at build time.
+ */
 export function isDemo(): boolean {
-  const demo = process.env.DEMO_MODE === "1" && !process.env.VERCEL;
+  const hosted = Boolean(process.env.VERCEL) || Boolean(process.env.NETLIFY);
+  const demo = process.env.DEMO_MODE === "1" && !hosted;
   return demo;
 }
 
@@ -23,7 +28,11 @@ export function stravaApiBase(): string {
 }
 
 export function databaseUrl(): string | undefined {
-  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  // NETLIFY_DATABASE_URL is set by Netlify's built-in database (Netlify DB).
+  const url =
+    process.env.DATABASE_URL ||
+    process.env.NETLIFY_DATABASE_URL ||
+    process.env.POSTGRES_URL;
   return url;
 }
 
