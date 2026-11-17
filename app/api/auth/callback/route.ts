@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { cookieOptions } from "@/lib/auth";
 import { allowedAthleteIds, sessionSecret } from "@/lib/config";
 import { getStore } from "@/lib/db";
+import { appOrigin } from "@/lib/origin";
 import {
   SESSION_COOKIE,
   SESSION_MAX_AGE_S,
@@ -18,8 +19,9 @@ import { exchangeCode, hasActivityScope } from "@/lib/strava";
  */
 export async function GET(request: NextRequest) {
   const url = request.nextUrl;
+  const origin = appOrigin(request);
   const fail = (code: string) => {
-    const failure = NextResponse.redirect(new URL(`/?error=${code}`, url.origin));
+    const failure = NextResponse.redirect(new URL(`/?error=${code}`, origin));
     failure.cookies.delete(STATE_COOKIE);
     return failure;
   };
@@ -68,7 +70,7 @@ export async function GET(request: NextRequest) {
     expiresAt: tokens.expires_at,
   });
 
-  const response = NextResponse.redirect(new URL("/", url.origin));
+  const response = NextResponse.redirect(new URL("/", origin));
   response.cookies.set(
     SESSION_COOKIE,
     signSession(athleteId, sessionSecret()),

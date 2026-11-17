@@ -98,7 +98,7 @@ applies its Next.js runtime automatically, so there's no `netlify.toml`.
    - Authorization Callback Domain: the bare `*.netlify.app` domain (e.g.
      `wilmslow-half.netlify.app`), without `https://`.
    - Upload an icon, then raise the capacity to 10 athletes.
-4. **Netlify → Site configuration → Environment variables:** add the variables below,
+4. **Netlify → Site configuration → Environment variables:** add the variables below (including `APP_URL`, your main `https://…netlify.app` address),
    then redeploy (**Deploys → Trigger deploy → Deploy site**), because new variables
    only apply to new deploys.
 5. Open the app, connect Strava (tick "View data about your private activities"),
@@ -107,15 +107,16 @@ applies its Next.js runtime automatically, so there's no `netlify.toml`.
 
 ### Environment variables
 
-| Name                   | Notes                                                                                                            |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `STRAVA_CLIENT_ID`     | From the Strava API settings page                                                                                |
-| `STRAVA_CLIENT_SECRET` | From the Strava API settings page                                                                                |
-| `SESSION_SECRET`       | Long random string for signing cookies, e.g. `openssl rand -hex 32`                                              |
-| `ALLOWED_ATHLETE_IDS`  | Comma-separated Strava athlete IDs (the number in your Strava profile URL)                                       |
-| `APP_TIMEZONE`         | Default `Europe/London`; decides what "today" is                                                                 |
-| `STRAVA_API_BASE`      | Default `https://www.strava.com/api/v3`. Strava's new base URL `https://api-v3.strava.com` arrives on 4 Jan 2027 |
-| `DATABASE_URL`         | Neon connection string. Not needed with Netlify DB, which sets `NETLIFY_DATABASE_URL` (also read)                |
+| Name                   | Notes                                                                                                                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STRAVA_CLIENT_ID`     | From the Strava API settings page                                                                                                                                       |
+| `STRAVA_CLIENT_SECRET` | From the Strava API settings page                                                                                                                                       |
+| `SESSION_SECRET`       | Long random string for signing cookies, e.g. `openssl rand -hex 32`                                                                                                     |
+| `ALLOWED_ATHLETE_IDS`  | Comma-separated Strava athlete IDs (the number in your Strava profile URL)                                                                                              |
+| `APP_TIMEZONE`         | Default `Europe/London`; decides what "today" is                                                                                                                        |
+| `STRAVA_API_BASE`      | Default `https://www.strava.com/api/v3`. Strava's new base URL `https://api-v3.strava.com` arrives on 4 Jan 2027                                                        |
+| `DATABASE_URL`         | Neon connection string. Not needed with Netlify DB, which sets `NETLIFY_DATABASE_URL` (also read)                                                                       |
+| `APP_URL`              | Your main site address, e.g. `https://wilmslow-half-tracker.netlify.app`. Needed on Netlify so Strava redirects back to it rather than a `main--` branch deploy address |
 
 > **Deploy previews:** Strava only redirects back to the callback domain set in its API
 > settings, so sign-in works on the main `*.netlify.app` domain only, not on deploy
