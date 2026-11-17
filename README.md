@@ -23,6 +23,11 @@ matched to planned sessions automatically.
   sheet.
 - **Season strip.** One square per week: green (≥ 80% complete), amber (≥ 50%), red,
   grey for future weeks. Tap a square to jump to that week.
+- **Progress page.** A dial of runs done out of runs planned (with a tick for how many
+  were due by today), cumulative distance run against the plan, and the fastest
+  intervals, fastest tempo and longest run so far, plus a row of medals counting
+  how many half marathons' worth you've run. Paces are whole-run averages,
+  because only Strava's activity summaries are fetched.
 - **Download / upload.** Download the plan with `status` and `actual` filled in, edit
   it elsewhere (e.g. with Claude), and upload it again. Progress is stored by session
   ID, so it survives a re-upload.
@@ -157,6 +162,7 @@ app/                 Next.js App Router pages, components and API routes
   api/override       Manual status / pinned runs for a session
 lib/matching.ts      Matching rules (pure, unit-tested)
 lib/plan.ts          Plan validation and export
+lib/stats.ts         Progress page figures (pure, unit-tested)
 lib/strava.ts        Strava API client
 lib/db.ts            Neon Postgres store (and in-memory store for demo mode)
 lib/session.ts       Signed session cookie

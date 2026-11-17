@@ -47,6 +47,11 @@ async function main() {
   await page.waitForSelector(".sheet");
   await page.screenshot({ path: `${OUT_DIR}/5-strength-sheet.png` });
   console.log(`saved ${OUT_DIR}/5-strength-sheet.png`);
+  await page.getByRole("button", { name: "Close" }).click();
+
+  await page.getByRole("link", { name: "Progress" }).click();
+  await page.waitForSelector(".dial");
+  await shot(page, "6-progress");
 
   await browser.close();
 }

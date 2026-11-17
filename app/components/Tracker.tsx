@@ -1,18 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { daysBetween } from "@/lib/dates";
 import type { ProgressResponse } from "@/lib/progress";
 import type { SessionResult, WeekResult } from "@/lib/types";
+import ErrorCard, { type ApiError } from "./ErrorCard";
 import PlanMenu from "./PlanMenu";
 import PoweredByStrava from "./PoweredByStrava";
 import SessionSheet from "./SessionSheet";
 import WeekView from "./WeekView";
-
-interface ApiError {
-  error: string;
-  message: string;
-}
 
 /** Index of the week to open on: the current week, else the nearest one. */
 function initialWeek(weeks: WeekResult[]): number {
@@ -167,6 +164,11 @@ export default function Tracker() {
         >
           {loading ? "Refreshing…" : "↻ Refresh"}
         </button>
+        {plan && weeks.length > 0 && (
+          <Link href="/progress" className="button-quiet toolbar-link">
+            Progress
+          </Link>
+        )}
         <PlanMenu plan={plan} onUploaded={load} />
       </div>
 
@@ -210,24 +212,4 @@ export default function Tracker() {
     </main>
   );
   return page;
-}
-
-/** Shows a load error with a reconnect link or a retry button. */
-function ErrorCard({ error, onRetry }: { error: ApiError; onRetry: () => void }) {
-  const reconnect = error.error === "strava_reconnect" || error.error === "signed_out";
-  const card = (
-    <section className="card alert-card" role="alert">
-      <p>{error.message}</p>
-      {reconnect ? (
-        <a className="strava-connect" href="/api/auth/login">
-          Reconnect Strava
-        </a>
-      ) : (
-        <button type="button" className="button-quiet" onClick={onRetry}>
-          Try again
-        </button>
-      )}
-    </section>
-  );
-  return card;
 }
