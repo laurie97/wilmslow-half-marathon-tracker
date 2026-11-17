@@ -1,0 +1,594 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "wilmslow-half-2027-demo",
+  "athlete": {
+    "name": "Demo Runner"
+  },
+  "race": {
+    "name": "Wilmslow Half Marathon",
+    "date": "2027-03-21",
+    "goals": {
+      "a_goal": {
+        "time": "1:49:59"
+      },
+      "b_goal": {
+        "time": "1:55:00"
+      }
+    }
+  },
+  "start_date": "2026-11-16",
+  "end_date": "2027-03-21",
+  "phases": [
+    {
+      "id": "base",
+      "name": "Base building",
+      "weeks": [1, 2, 3, 4]
+    }
+  ],
+  "warm_up": {
+    "applies_to": ["intervals", "tempo"],
+    "description": "10 min easy jog, then leg swings, high knees and 4 × 20 s strides."
+  },
+  "cool_down": {
+    "applies_to": ["intervals", "tempo"],
+    "description": "5–10 min easy jog, then calf, hamstring and hip-flexor stretches."
+  },
+  "strength": {
+    "routines": {
+      "light": {
+        "name": "Light",
+        "exercises": [
+          {
+            "name": "Glute bridge",
+            "reps": 12,
+            "cue": "Squeeze at the top for a second."
+          },
+          {
+            "name": "Calf raise",
+            "reps": 15,
+            "per_side": true,
+            "cue": "Slow on the way down."
+          },
+          {
+            "name": "Dead bug",
+            "reps": 8,
+            "per_side": true,
+            "cue": "Lower back stays flat."
+          }
+        ]
+      },
+      "main": {
+        "name": "Main",
+        "exercises": [
+          {
+            "name": "Split squat",
+            "reps": 10,
+            "per_side": true,
+            "cue": "Front knee tracks over toes."
+          },
+          {
+            "name": "Single-leg Romanian deadlift",
+            "reps": 8,
+            "per_side": true,
+            "cue": "Hips square, long spine."
+          },
+          {
+            "name": "Single-leg calf raise",
+            "reps": 12,
+            "per_side": true,
+            "cue": "Full range, pause at the top."
+          },
+          {
+            "name": "Side plank",
+            "duration_s": 30,
+            "per_side": true,
+            "cue": "Straight line from head to heel."
+          },
+          {
+            "name": "Glute bridge",
+            "reps": 12,
+            "cue": "Drive through the heels."
+          }
+        ]
+      },
+      "race_week": {
+        "name": "Race week",
+        "exercises": [
+          {
+            "name": "Glute bridge",
+            "reps": 10,
+            "cue": "Activation only, no fatigue."
+          },
+          {
+            "name": "Calf raise",
+            "reps": 10,
+            "cue": "Easy."
+          }
+        ]
+      }
+    },
+    "progression": "Add a set every 3 weeks; drop to 2 sets in cut-back weeks."
+  },
+  "rules": [
+    "Easy runs really easy: you should be able to talk.",
+    "Miss a session? Don't make it up; carry on with the week.",
+    "Long run can move between Saturday and Sunday."
+  ],
+  "checkpoints": [
+    {
+      "week": 2,
+      "type": "time_trial",
+      "description": "parkrun 5k to set paces."
+    }
+  ],
+  "weeks": [
+    {
+      "week": 1,
+      "week_commencing": "2026-11-16",
+      "phase": "base",
+      "pace_set": "baseline",
+      "est_running_km": 33,
+      "notes": "First week. Keep everything relaxed and get the routine going.",
+      "sessions": [
+        {
+          "id": "w01-mon-strength",
+          "date": "2026-11-16",
+          "day": "Monday",
+          "type": "strength",
+          "title": "Strength (main)",
+          "est_distance_km": 0,
+          "est_duration_min": 30,
+          "routine": "main",
+          "sets": 2,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w01-tue-intervals",
+          "date": "2026-11-17",
+          "day": "Tuesday",
+          "type": "intervals",
+          "title": "6 × 400 m",
+          "est_distance_km": 6,
+          "est_duration_min": 40,
+          "warm_up_km": 2,
+          "cool_down_km": 1.5,
+          "structure": [
+            {
+              "reps": 6,
+              "distance_m": 400,
+              "pace": "5k",
+              "recovery": "90 s jog"
+            }
+          ],
+          "notes": "Reps at 5k effort. Jog recoveries, don't walk.",
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w01-wed-easy",
+          "date": "2026-11-18",
+          "day": "Wednesday",
+          "type": "easy",
+          "title": "Easy run",
+          "est_distance_km": 5,
+          "est_duration_min": 32,
+          "notes": "Conversational pace.",
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w01-thu-tempo",
+          "date": "2026-11-19",
+          "day": "Thursday",
+          "type": "tempo",
+          "title": "15 min tempo",
+          "est_distance_km": 7,
+          "est_duration_min": 42,
+          "warm_up_km": 2,
+          "cool_down_km": 1.5,
+          "structure": [
+            {
+              "duration_min": 15,
+              "pace": "tempo"
+            }
+          ],
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w01-fri-strength",
+          "date": "2026-11-20",
+          "day": "Friday",
+          "type": "strength",
+          "title": "Strength (light)",
+          "est_distance_km": 0,
+          "est_duration_min": 20,
+          "routine": "light",
+          "sets": 2,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w01-sat-easy",
+          "date": "2026-11-21",
+          "day": "Saturday",
+          "type": "easy",
+          "title": "Easy run",
+          "est_distance_km": 5,
+          "est_duration_min": 32,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w01-sun-long-run",
+          "date": "2026-11-22",
+          "day": "Sunday",
+          "type": "long_run",
+          "title": "Long run",
+          "est_distance_km": 10,
+          "est_duration_min": 63,
+          "notes": "Easy pace throughout.",
+          "status": "planned",
+          "actual": null,
+          "flexible_window": {
+            "start": "2026-11-21",
+            "end": "2026-11-22"
+          }
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "week_commencing": "2026-11-23",
+      "phase": "base",
+      "pace_set": "baseline",
+      "est_running_km": 35.0,
+      "notes": "Saturday's parkrun sets your training paces for the next block.",
+      "sessions": [
+        {
+          "id": "w02-mon-strength",
+          "date": "2026-11-23",
+          "day": "Monday",
+          "type": "strength",
+          "title": "Strength (main)",
+          "est_distance_km": 0,
+          "est_duration_min": 30,
+          "routine": "main",
+          "sets": 2,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w02-tue-intervals",
+          "date": "2026-11-24",
+          "day": "Tuesday",
+          "type": "intervals",
+          "title": "5 × 600 m",
+          "est_distance_km": 6.5,
+          "est_duration_min": 42,
+          "warm_up_km": 2,
+          "cool_down_km": 1.5,
+          "structure": [
+            {
+              "reps": 5,
+              "distance_m": 600,
+              "pace": "5k",
+              "recovery": "2 min jog"
+            }
+          ],
+          "notes": "Reps at 5k effort. Jog recoveries, don't walk.",
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w02-wed-easy",
+          "date": "2026-11-25",
+          "day": "Wednesday",
+          "type": "easy",
+          "title": "Easy run",
+          "est_distance_km": 5,
+          "est_duration_min": 32,
+          "notes": "Conversational pace.",
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w02-thu-tempo",
+          "date": "2026-11-26",
+          "day": "Thursday",
+          "type": "tempo",
+          "title": "2 × 8 min tempo",
+          "est_distance_km": 7.5,
+          "est_duration_min": 45,
+          "warm_up_km": 2,
+          "cool_down_km": 1.5,
+          "structure": [
+            {
+              "reps": 2,
+              "duration_min": 8,
+              "pace": "tempo",
+              "recovery": "2 min jog"
+            }
+          ],
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w02-fri-strength",
+          "date": "2026-11-27",
+          "day": "Friday",
+          "type": "strength",
+          "title": "Strength (light)",
+          "est_distance_km": 0,
+          "est_duration_min": 20,
+          "routine": "light",
+          "sets": 2,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w02-sat-parkrun-tt",
+          "date": "2026-11-28",
+          "day": "Saturday",
+          "type": "time_trial",
+          "title": "parkrun 5k time trial",
+          "est_distance_km": 5,
+          "est_duration_min": 25,
+          "goal_time": "25:00",
+          "notes": "Run hard but even. Jog there as your warm-up.",
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w02-sun-long-run",
+          "date": "2026-11-29",
+          "day": "Sunday",
+          "type": "long_run",
+          "title": "Long run",
+          "est_distance_km": 11,
+          "est_duration_min": 69,
+          "notes": "Easy pace throughout.",
+          "status": "planned",
+          "actual": null,
+          "flexible_window": {
+            "start": "2026-11-28",
+            "end": "2026-11-29"
+          }
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "week_commencing": "2026-11-30",
+      "phase": "base",
+      "pace_set": "block-1",
+      "est_running_km": 38,
+      "notes": "Paces now based on the week 2 parkrun.",
+      "sessions": [
+        {
+          "id": "w03-mon-strength",
+          "date": "2026-11-30",
+          "day": "Monday",
+          "type": "strength",
+          "title": "Strength (main)",
+          "est_distance_km": 0,
+          "est_duration_min": 30,
+          "routine": "main",
+          "sets": 3,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w03-tue-intervals",
+          "date": "2026-12-01",
+          "day": "Tuesday",
+          "type": "intervals",
+          "title": "6 × 600 m",
+          "est_distance_km": 7,
+          "est_duration_min": 45,
+          "warm_up_km": 2,
+          "cool_down_km": 1.5,
+          "structure": [
+            {
+              "reps": 6,
+              "distance_m": 600,
+              "pace": "5k",
+              "recovery": "2 min jog"
+            }
+          ],
+          "notes": "Reps at 5k effort. Jog recoveries, don't walk.",
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w03-wed-easy",
+          "date": "2026-12-02",
+          "day": "Wednesday",
+          "type": "easy",
+          "title": "Easy run",
+          "est_distance_km": 6,
+          "est_duration_min": 39,
+          "notes": "Conversational pace.",
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w03-thu-tempo",
+          "date": "2026-12-03",
+          "day": "Thursday",
+          "type": "tempo",
+          "title": "20 min tempo",
+          "est_distance_km": 8,
+          "est_duration_min": 48,
+          "warm_up_km": 2,
+          "cool_down_km": 1.5,
+          "structure": [
+            {
+              "duration_min": 20,
+              "pace": "tempo"
+            }
+          ],
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w03-fri-strength",
+          "date": "2026-12-04",
+          "day": "Friday",
+          "type": "strength",
+          "title": "Strength (light)",
+          "est_distance_km": 0,
+          "est_duration_min": 20,
+          "routine": "light",
+          "sets": 2,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w03-sat-easy",
+          "date": "2026-12-05",
+          "day": "Saturday",
+          "type": "easy",
+          "title": "Easy run",
+          "est_distance_km": 5,
+          "est_duration_min": 32,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w03-sun-long-run",
+          "date": "2026-12-06",
+          "day": "Sunday",
+          "type": "long_run",
+          "title": "Long run",
+          "est_distance_km": 12,
+          "est_duration_min": 76,
+          "notes": "Easy pace throughout.",
+          "status": "planned",
+          "actual": null,
+          "flexible_window": {
+            "start": "2026-12-05",
+            "end": "2026-12-06"
+          }
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "week_commencing": "2026-12-07",
+      "phase": "base",
+      "pace_set": "block-1",
+      "est_running_km": 32,
+      "notes": "Cut-back week: a little less of everything so you absorb the training.",
+      "sessions": [
+        {
+          "id": "w04-mon-strength",
+          "date": "2026-12-07",
+          "day": "Monday",
+          "type": "strength",
+          "title": "Strength (main)",
+          "est_distance_km": 0,
+          "est_duration_min": 30,
+          "routine": "main",
+          "sets": 2,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w04-tue-intervals",
+          "date": "2026-12-08",
+          "day": "Tuesday",
+          "type": "intervals",
+          "title": "4 × 800 m",
+          "est_distance_km": 6,
+          "est_duration_min": 40,
+          "warm_up_km": 2,
+          "cool_down_km": 1.5,
+          "structure": [
+            {
+              "reps": 4,
+              "distance_m": 800,
+              "pace": "5k",
+              "recovery": "2 min jog"
+            }
+          ],
+          "notes": "Reps at 5k effort. Jog recoveries, don't walk.",
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w04-wed-easy",
+          "date": "2026-12-09",
+          "day": "Wednesday",
+          "type": "easy",
+          "title": "Easy run",
+          "est_distance_km": 5,
+          "est_duration_min": 32,
+          "notes": "Conversational pace.",
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w04-thu-tempo",
+          "date": "2026-12-10",
+          "day": "Thursday",
+          "type": "tempo",
+          "title": "15 min tempo",
+          "est_distance_km": 7,
+          "est_duration_min": 42,
+          "warm_up_km": 2,
+          "cool_down_km": 1.5,
+          "structure": [
+            {
+              "duration_min": 15,
+              "pace": "tempo"
+            }
+          ],
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w04-fri-strength",
+          "date": "2026-12-11",
+          "day": "Friday",
+          "type": "strength",
+          "title": "Strength (light)",
+          "est_distance_km": 0,
+          "est_duration_min": 20,
+          "routine": "light",
+          "sets": 2,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w04-sat-easy",
+          "date": "2026-12-12",
+          "day": "Saturday",
+          "type": "easy",
+          "title": "Easy run",
+          "est_distance_km": 4,
+          "est_duration_min": 26,
+          "status": "planned",
+          "actual": null
+        },
+        {
+          "id": "w04-sun-long-run",
+          "date": "2026-12-13",
+          "day": "Sunday",
+          "type": "long_run",
+          "title": "Long run",
+          "est_distance_km": 10,
+          "est_duration_min": 63,
+          "notes": "Easy pace throughout.",
+          "status": "planned",
+          "actual": null,
+          "flexible_window": {
+            "start": "2026-12-12",
+            "end": "2026-12-13"
+          }
+        }
+      ]
+    }
+  ]
+}
