@@ -1,4 +1,4 @@
-/** The app's mascot: a raccoon running in a race bib. Decorative, so no alt text. */
+/** The app's mascot: Ralph the raccoon, running in a race bib. Decorative, so no alt text. */
 export default function RaccoonLogo({
   size,
   className = "",
