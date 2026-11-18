@@ -312,12 +312,21 @@ export function matchWeek(input: MatchInput): WeekResult {
  * Matches every week of a plan, sharing pinned runs across weeks so a run
  * pinned in one week is never reused automatically in another.
  */
+/** The plan's first day: `start_date` if set, else the first week's Monday. */
+export function planStart(plan: Plan): string {
+  const start = plan.start_date ?? plan.weeks[0].week_commencing;
+  return start;
+}
+
 export function matchPlan(
   plan: Plan,
-  activities: Activity[],
+  allActivities: Activity[],
   overrides: Override[],
   today: string,
 ): WeekResult[] {
+  // Runs before the plan starts (e.g. the Monday of week 1) are ignored.
+  const start = planStart(plan);
+  const activities = allActivities.filter((a) => a.date >= start);
   const overrideMap = new Map(overrides.map((o) => [o.sessionId, o]));
   const phaseNames = new Map((plan.phases ?? []).map((p) => [p.id, p.name]));
   const weekOfSession = new Map<string, number>();

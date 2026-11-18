@@ -9,7 +9,7 @@ import {
   type Store,
   type StoredLap,
 } from "./db";
-import { isRunActivity, matchPlan } from "./matching";
+import { isRunActivity, matchPlan, planStart } from "./matching";
 import { WINDOW_DAYS } from "./prediction";
 import { REP_SESSION_TYPES, summariseReps, type Lap } from "./reps";
 import { StravaError, fetchActivities, fetchLaps, validAccessToken } from "./strava";
@@ -43,7 +43,7 @@ export interface ProgressResponse {
   demo: boolean;
   plan: PlanSummary | null;
   weeks: WeekResult[];
-  earlierRuns: Activity[]; // runs in the 8 weeks before the plan, for the prediction
+  earlierRuns: Activity[]; // runs in the 8 weeks before the plan starts, for the prediction
 }
 
 export interface AthleteContext {
@@ -263,7 +263,7 @@ export async function buildProgress(athleteId: number): Promise<ProgressResponse
     const activities = await loadActivities(ctx, record.plan);
     weeks = matchPlan(record.plan, activities, ctx.overrides, ctx.today);
     weeks = attachReps(weeks, await loadLaps(ctx, weeks));
-    const start = record.plan.weeks[0].week_commencing;
+    const start = planStart(record.plan);
     earlierRuns = activities.filter((a) => isRunActivity(a) && a.date < start);
   }
   const progress: ProgressResponse = {
