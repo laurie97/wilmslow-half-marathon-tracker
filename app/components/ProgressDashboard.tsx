@@ -56,7 +56,12 @@ export default function ProgressDashboard() {
       <Link href="/" className="back-link">
         ‹ This week
       </Link>
-      <h1>How it’s going</h1>
+      <div className="top-row">
+        <h1>How it’s going</h1>
+        <Link href="/compare" className="button-quiet header-link">
+          Compare
+        </Link>
+      </div>
     </header>
   );
 
@@ -95,14 +100,6 @@ export default function ProgressDashboard() {
         <p className="speech">{ralphSays(stats.runs)}</p>
       </section>
 
-      <PredictionCard
-        current={predictHalf(allRuns, data.today)}
-        points={predictions}
-        today={data.today}
-        goalS={parseRaceTime(data.plan.goalTime)}
-        goalLabel={data.plan.goalTime}
-      />
-
       <section className="card panel">
         <h2>Runs done</h2>
         <RunsDial runs={stats.runs} />
@@ -117,6 +114,14 @@ export default function ProgressDashboard() {
         />
         <DistanceChart points={stats.distance} today={data.today} />
       </section>
+
+      <PredictionCard
+        current={predictHalf(allRuns, data.today)}
+        points={predictions}
+        today={data.today}
+        goalS={parseRaceTime(data.plan.goalTime)}
+        goalLabel={data.plan.goalTime}
+      />
 
       <section className="bests" aria-label="Best runs">
         <BestTile label="Fastest intervals" best={stats.fastestIntervals} show="pace" />

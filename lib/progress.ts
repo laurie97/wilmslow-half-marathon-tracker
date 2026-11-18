@@ -81,8 +81,8 @@ export async function loadActivities(
 ): Promise<Activity[]> {
   let activities: Activity[];
   if (isDemo()) {
-    const { demoActivities } = await import("./demo");
-    activities = demoActivities(plan, ctx.today);
+    const { demoActivitiesFor } = await import("./demo");
+    activities = demoActivitiesFor(ctx.athlete.id, plan, ctx.today);
   } else {
     const first = plan.weeks[0].week_commencing;
     const last = addDays(plan.weeks[plan.weeks.length - 1].week_commencing, 6);

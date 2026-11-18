@@ -27,9 +27,13 @@ matched to planned sessions automatically.
   were due by today), cumulative distance run against the plan, and the fastest
   intervals, fastest tempo and longest run so far, plus a row of medals counting
   how many half marathons' worth you've run.
-- **Race prediction.** At the top of the progress page: the half marathon time you'd
+- **Race prediction.** On the progress page, below runs done and distance: the half marathon time you'd
   run if you raced today, how far it is from your goal, and a chart of how the
   prediction has moved over the plan. It updates as you add runs (see below).
+- **Compare athletes.** From the progress page: every athlete with a plan, side by
+  side, with the share of their planned runs done and their cumulative distance over
+  time (`lib/compare.ts`). Only first names are shown. Other athletes' data is cached
+  for 10 minutes to spare Strava's rate limit. Demo mode adds three demo friends.
 - **Ralph.** The app's mascot, a raccoon in a race bib
   (`public/raccoon.svg`; his head is the favicon). He comments on your progress at the
   top of the progress page (`lib/ralph.ts`). Paces are whole-run averages,
@@ -183,11 +187,13 @@ app/                 Next.js App Router pages, components and API routes
   api/auth/*         Strava sign-in, callback and logout
   api/plan           GET downloads the plan with progress, POST uploads a plan
   api/progress       Everything the page needs in one call
+  api/compare        Runs done and distance for every athlete with a plan
   api/override       Manual status / pinned runs for a session
 lib/matching.ts      Matching rules (pure, unit-tested)
 lib/plan.ts          Plan validation and export
 lib/stats.ts         Progress page figures (pure, unit-tested)
 lib/prediction.ts    Half marathon prediction (pure, unit-tested)
+lib/compare.ts       Compare page figures for every athlete
 lib/strava.ts        Strava API client
 lib/db.ts            Neon Postgres store (and in-memory store for demo mode)
 lib/session.ts       Signed session cookie

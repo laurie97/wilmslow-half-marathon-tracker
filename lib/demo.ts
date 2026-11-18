@@ -9,6 +9,14 @@ import { validatePlan } from "./plan";
 import type { Activity, Plan, PlanSession } from "./types";
 
 export const DEMO_ATHLETE_ID = 1;
+
+// Other demo athletes on the same plan, for the compare page: each runs a
+// different share of the planned distance and skips every nth run.
+const DEMO_FRIENDS = [
+  { id: 2, firstname: "Sam", scale: 0.9, skipEvery: 4 },
+  { id: 3, firstname: "Priya", scale: 1.12, skipEvery: 9 },
+  { id: 4, firstname: "Jordan", scale: 0.75, skipEvery: 3 },
+];
 const DEFAULT_DEMO_TODAY = "2026-12-03";
 
 export function demoToday(): string {
@@ -31,6 +39,16 @@ export async function seedDemoStore(store: Store): Promise<void> {
   }
   const plan = validated.plan;
   await store.savePlan(DEMO_ATHLETE_ID, plan);
+  for (const friend of DEMO_FRIENDS) {
+    await store.upsertAthlete({
+      id: friend.id,
+      firstname: friend.firstname,
+      accessToken: "demo",
+      refreshToken: "demo",
+      expiresAt: 4102444800,
+    });
+    await store.savePlan(friend.id, plan);
+  }
   const today = demoToday();
   for (const [index, week] of plan.weeks.slice(0, 3).entries()) {
     const strength = week.sessions.filter(
@@ -183,4 +201,28 @@ function addSession(session: PlanSession, messy: boolean, add: AddFn): void {
     session.type,
     name,
   );
+}
+
+/**
+ * Demo activities for any demo athlete: the main athlete gets
+ * `demoActivities` as is; the others get a scaled copy with some runs skipped.
+ */
+export function demoActivitiesFor(
+  athleteId: number,
+  plan: Plan,
+  today: string,
+): Activity[] {
+  const base = demoActivities(plan, today);
+  const friend = DEMO_FRIENDS.find((f) => f.id === athleteId);
+  if (!friend) {
+    return base;
+  }
+  const activities = base
+    .filter((a, i) => a.sportType !== "Run" || (i + 1) % friend.skipEvery !== 0)
+    .map((a) => ({
+      ...a,
+      distanceKm: Math.round(a.distanceKm * friend.scale * 100) / 100,
+      movingTimeS: Math.round(a.movingTimeS * friend.scale),
+    }));
+  return activities;
 }
