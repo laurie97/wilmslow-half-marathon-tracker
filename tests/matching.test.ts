@@ -284,4 +284,20 @@ describe("matchPlan", () => {
     expect(r2.extras).toHaveLength(0);
     expect(r2.phaseName).toBe("Base");
   });
+
+  it("ignores runs before the plan's start date", () => {
+    const plan: Plan = { start_date: TUE, weeks: [standardWeek()] };
+    const early = run(MON, 7);
+    const onTime = run(TUE, 7);
+    const [week] = matchPlan(plan, [early, onTime], [], WED);
+    expect(byId(week, "tue-intervals").matched.map((a) => a.id)).toEqual([onTime.id]);
+    expect(week.runs.map((a) => a.id)).toEqual([onTime.id]);
+    expect(week.extras).toHaveLength(0);
+  });
+
+  it("uses the first week's Monday without a start date", () => {
+    const plan: Plan = { weeks: [standardWeek()] };
+    const [week] = matchPlan(plan, [run(MON, 7)], [], WED);
+    expect(week.runs).toHaveLength(1);
+  });
 });

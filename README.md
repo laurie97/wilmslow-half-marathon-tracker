@@ -16,7 +16,8 @@ matched to planned sessions automatically.
   athlete).
 - **Weekly schedule (Mon–Sun).** Sessions are colour-coded: **green** done, **amber**
   partial, **red** missed, **grey** upcoming. A run done on a different day gets a
-  "moved to Wed" tag but still counts.
+  "moved to Wed" tag but still counts. Runs before the plan's `start_date` (or
+  the first week's Monday if it has none) are ignored.
 - **Automatic matching** of Strava runs to sessions (see below). Tap a session to
   correct a guess, swap two runs, mark "no run", or set the status by hand.
 - **Strength sessions** are ticked by hand, with the routine's exercises shown in the
