@@ -1,17 +1,58 @@
-:root {
-  --bg: #f6f5f2;
-  --card: #ffffff;
-  --text: #1d2125;
-  --muted: #6b7079;
-  --line: #e6e3dd;
-  --accent: #2f5d62;
-  --done: #2f9e5d;
-  --partial: #e0a21b;
-  --missed: #d4534b;
-  --planned: #c4c8ce;
-  --today: #fff8e6;
+/* Themes -----------------------------------------------------------------
+   Every colour comes from these tokens. The <html data-theme> attribute picks
+   a palette: "bandit" (default), "midnight" or "raceday". */
+
+:root,
+[data-theme="bandit"] {
+  /* Bandit: a raccoon in daylight. Warm fur greys, mask charcoal, cream, with
+     a rusty autumn-leaf accent. */
+  --bg: #efebe5;
+  --card: #fffdf9;
+  --text: #262220;
+  --muted: #6f6761;
+  --line: #e3dbd1;
+  --accent: #b5582f;
+  --accent-contrast: #fffdf9;
+  --accent-soft: #f7e8de;
+  --accent-ink: #7f3a1b;
+  --done: #4f8a5b;
+  --done-soft: #e5efe3;
+  --done-ink: #2f5c39;
+  --partial: #d69a2e;
+  --partial-soft: #f8edd5;
+  --partial-ink: #7a5609;
+  --missed: #c0504a;
+  --missed-soft: #f8e4e1;
+  --missed-ink: #8a2a23;
+  --missed-line: #ecc4bf;
+  --planned: #cfc6bc;
+  --surface-2: #ebe5dd;
+  --surface-2-ink: #5d5550;
+  --expected: #a39a92;
+  --today: #fbf0dc;
+  --today-ink: #9a5a12;
+  --hero-bg: #2f2b29;
+  --hero-text: #f4ede4;
+  --hero-muted: #bcb2a8;
+  --hero-tile: rgba(255, 248, 238, 0.09);
+  --hero-figure: #f4ede4;
+  --logo-bg: #e9e1d7;
+  /* Ringed tail along the bottom of the header. */
+  --band: repeating-linear-gradient(
+    90deg,
+    #4a4441 0 18px,
+    #8a837e 18px 36px,
+    #e9e1d7 36px 42px,
+    #8a837e 42px 60px
+  );
+  --font-display: var(--font-bricolage), -apple-system, BlinkMacSystemFont, sans-serif;
+  --display-weight: 750;
+  --display-case: none;
+  --display-tracking: -0.01em;
+  --shadow: 0 1px 2px rgba(47, 43, 41, 0.08);
+  --shadow-lg: 0 10px 28px rgba(47, 43, 41, 0.12);
   --strava: #fc4c02;
-  --radius: 14px;
+  --radius: 16px;
   /* Categorical series colours (compare page), assigned in this order. */
   --series-1: #2a78d6;
   --series-2: #eb6834;
@@ -22,6 +63,104 @@
   --series-7: #6250d6;
   --series-8: #e34948;
   --series-other: #9ca2aa;
+  color-scheme: light;
+}
+
+[data-theme="midnight"] {
+  /* Midnight: a raccoon on a night-time bin raid. Charcoal and slate with
+     cream fur and amber eyeshine. */
+  --bg: #15171a;
+  --card: #1f2226;
+  --text: #ede6df;
+  --muted: #a29b94;
+  --line: #31353b;
+  --accent: #f0b54a;
+  --accent-contrast: #1b1712;
+  --accent-soft: #3a3020;
+  --accent-ink: #f6cd80;
+  --done: #5fbf86;
+  --done-soft: #1f3529;
+  --done-ink: #8fd9ab;
+  --partial: #e8873a;
+  --partial-soft: #3a2a1c;
+  --partial-ink: #f3b07a;
+  --missed: #e26a62;
+  --missed-soft: #3b2224;
+  --missed-ink: #f2a29c;
+  --missed-line: #5a3236;
+  --planned: #4a4f56;
+  --surface-2: #2c3035;
+  --surface-2-ink: #c3bcb5;
+  --expected: #6f757d;
+  --today: #26231d;
+  --today-ink: #f0b54a;
+  --hero-bg:
+    radial-gradient(circle at 88% 12%, rgba(240, 181, 74, 0.22), transparent 38%),
+    linear-gradient(160deg, #2b2f35, #1a1c20);
+  --hero-text: #ede6df;
+  --hero-muted: #a29b94;
+  --hero-tile: rgba(255, 255, 255, 0.06);
+  --hero-figure: #f0b54a;
+  --logo-bg: #ede6df;
+  --band: repeating-linear-gradient(
+    90deg,
+    #2c3035 0 18px,
+    #5a5f66 18px 36px,
+    #a29b94 36px 40px,
+    #5a5f66 40px 58px
+  );
+  --font-display: var(--font-space), -apple-system, BlinkMacSystemFont, sans-serif;
+  --display-weight: 700;
+  --display-case: none;
+  --display-tracking: -0.02em;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.5);
+  --series-other: #6f757d;
+  color-scheme: dark;
+}
+
+[data-theme="raceday"] {
+  /* Race day: no raccoon colours. Electric blue and violet like a start-line
+     banner, coral for effort, a finish-line chequer under the header. */
+  --bg: #f2f4fa;
+  --card: #ffffff;
+  --text: #121833;
+  --muted: #5c6480;
+  --line: #dde2ee;
+  --accent: #ff5a36;
+  --accent-contrast: #ffffff;
+  --accent-soft: #ffe9e3;
+  --accent-ink: #b0300f;
+  --done: #12a37f;
+  --done-soft: #ddf5ee;
+  --done-ink: #0b6650;
+  --partial: #f2a516;
+  --partial-soft: #fff1d6;
+  --partial-ink: #7a5205;
+  --missed: #e5484d;
+  --missed-soft: #fde6e7;
+  --missed-ink: #9b1c21;
+  --missed-line: #f5c2c4;
+  --planned: #c7cde0;
+  --surface-2: #e6e9f3;
+  --surface-2-ink: #485070;
+  --expected: #9aa2bd;
+  --today: #fff3ec;
+  --today-ink: #d43c18;
+  --hero-bg: linear-gradient(135deg, #2433c4 0%, #5b2bc9 100%);
+  --hero-text: #ffffff;
+  --hero-muted: #c9ccff;
+  --hero-tile: rgba(255, 255, 255, 0.13);
+  --hero-figure: #d9ff4a;
+  --logo-bg: #ffffff;
+  /* Finish-line chequer. */
+  --band: repeating-conic-gradient(#121833 0 25%, #ffffff 0 50%) 0 0 / 12px 12px;
+  --font-display: var(--font-barlow), "Arial Narrow", sans-serif;
+  --display-weight: 800;
+  --display-case: uppercase;
+  --display-tracking: 0.01em;
+  --shadow: 0 1px 3px rgba(18, 24, 51, 0.08);
+  --shadow-lg: 0 12px 30px rgba(36, 51, 196, 0.16);
   color-scheme: light;
 }
 
@@ -94,8 +233,8 @@ a {
 }
 
 .alert {
-  background: #fdecea;
-  color: #8a2a23;
+  background: var(--missed-soft);
+  color: var(--missed-ink);
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 0.9rem;
@@ -105,8 +244,8 @@ a {
   display: grid;
   gap: 12px;
   margin-bottom: 16px;
-  border-color: #f2c4bf;
-  background: #fdf3f2;
+  border-color: var(--missed-line);
+  background: var(--missed-soft);
 }
 
 .link-button {
@@ -136,7 +275,7 @@ a {
   width: 100%;
   margin-top: 16px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
   border: none;
   border-radius: 12px;
   padding: 13px 16px;
@@ -206,8 +345,8 @@ a {
 
 .demo-tag {
   margin-left: 8px;
-  background: #e8eef0;
-  color: var(--accent);
+  background: var(--hero-tile);
+  color: var(--hero-text);
   border-radius: 6px;
   padding: 1px 6px;
   letter-spacing: 0.04em;
@@ -270,11 +409,11 @@ a {
 }
 
 .square-future {
-  background: #e3e5e8;
+  background: var(--surface-2);
 }
 
 .square-current {
-  background: #fff;
+  background: var(--card);
   border-color: var(--text);
 }
 
@@ -309,7 +448,7 @@ a {
   display: grid;
   gap: 4px;
   padding: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-lg);
 }
 
 .menu-item {
@@ -358,18 +497,18 @@ a {
 }
 
 .notice-ok {
-  background: #e9f6ee;
-  color: #1f6b3f;
+  background: var(--done-soft);
+  color: var(--done-ink);
 }
 
 .notice-warning {
-  background: #fdf5e2;
-  color: #7a5609;
+  background: var(--partial-soft);
+  color: var(--partial-ink);
 }
 
 .notice-error {
-  background: #fdecea;
-  color: #8a2a23;
+  background: var(--missed-soft);
+  color: var(--missed-ink);
 }
 
 .empty {
@@ -436,7 +575,7 @@ a {
 
 .km-bar {
   height: 8px;
-  background: #eceae5;
+  background: var(--surface-2);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -500,7 +639,7 @@ a {
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #9a6b00;
+  color: var(--today-ink);
 }
 
 .day-sessions {
@@ -589,24 +728,24 @@ a {
   font-weight: 600;
   border-radius: 999px;
   padding: 2px 8px;
-  background: #eceef1;
-  color: #555b63;
+  background: var(--surface-2);
+  color: var(--surface-2-ink);
 }
 
 .chip-done {
-  background: #e3f4ea;
-  color: #1f6b3f;
+  background: var(--done-soft);
+  color: var(--done-ink);
 }
 
 .chip-partial {
-  background: #fcf1d8;
-  color: #7a5609;
+  background: var(--partial-soft);
+  color: var(--partial-ink);
 }
 
 .chip-missed,
 .chip-skipped {
-  background: #fbe5e3;
-  color: #8a2a23;
+  background: var(--missed-soft);
+  color: var(--missed-ink);
 }
 
 .tags {
@@ -617,8 +756,8 @@ a {
 
 .tag {
   font-size: 0.72rem;
-  background: #eef1f6;
-  color: #3f4a5a;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
   border-radius: 6px;
   padding: 1px 6px;
 }
@@ -763,7 +902,7 @@ a {
 .segmented button.selected {
   background: var(--card);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow);
 }
 
 .choices {
@@ -787,7 +926,7 @@ a {
 
 .choice.selected {
   border-color: var(--accent);
-  background: #eef4f4;
+  background: var(--accent-soft);
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
@@ -816,8 +955,8 @@ a {
   padding: 18px 16px;
   border-radius: 16px;
   border: 2px dashed var(--done);
-  background: #f3faf6;
-  color: #1f6b3f;
+  background: var(--done-soft);
+  color: var(--done-ink);
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
@@ -976,7 +1115,7 @@ a {
 }
 
 .dial-track {
-  stroke: #e3e5e8;
+  stroke: var(--surface-2);
 }
 
 .dial-done {
@@ -1030,7 +1169,7 @@ a {
 }
 
 .line-expected {
-  background: #9ca2aa;
+  background: var(--expected);
 }
 
 .line-goal {
@@ -1110,7 +1249,7 @@ a {
 }
 
 .line-expected-path {
-  stroke: #9ca2aa;
+  stroke: var(--expected);
 }
 
 .line-actual-path {
@@ -1133,7 +1272,7 @@ a {
 }
 
 .expected-dot {
-  fill: #9ca2aa;
+  fill: var(--expected);
 }
 
 .tooltip {
@@ -1145,7 +1284,7 @@ a {
   border-radius: 10px;
   padding: 6px 10px;
   font-size: 0.8rem;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-lg);
   white-space: nowrap;
 }
 
@@ -1250,8 +1389,8 @@ a {
 }
 
 .medal-empty {
-  fill: #eceef0;
-  stroke: #d3d6db;
+  fill: var(--surface-2);
+  stroke: var(--planned);
   stroke-width: 1.5;
 }
 
@@ -1401,4 +1540,155 @@ a {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+/* Personality ------------------------------------------------------------ */
+
+h1,
+.week-title h2,
+.panel h2,
+.signin-card h1,
+.sheet-head h2,
+.stats strong,
+.figure,
+.best-value,
+.day-date {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+}
+
+h1,
+.week-title h2,
+.panel h2,
+.signin-card h1 {
+  text-transform: var(--display-case);
+}
+
+.dial-value {
+  font-family: var(--font-display);
+}
+
+.card,
+.session,
+.stats > div,
+.nav-arrow,
+.button-quiet {
+  box-shadow: var(--shadow);
+}
+
+/* Header as a hero banner. */
+.top {
+  position: relative;
+  overflow: hidden;
+  background: var(--hero-bg);
+  color: var(--hero-text);
+  border-radius: 22px;
+  padding: 16px 16px 26px;
+  box-shadow: var(--shadow-lg);
+}
+
+.top::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10px;
+  background: var(--band);
+}
+
+.top h1 {
+  font-size: 1.6rem;
+  line-height: 1.05;
+}
+
+.top .eyebrow,
+.top .back-link,
+.top .link-button {
+  color: var(--hero-muted);
+}
+
+.top .raccoon {
+  background: var(--logo-bg);
+  border-radius: 50%;
+  padding: 4px;
+}
+
+.top .stats > div {
+  background: var(--hero-tile);
+  border: none;
+  box-shadow: none;
+}
+
+.top .stats strong {
+  font-size: 1.45rem;
+  color: var(--hero-figure);
+}
+
+.top .stats span {
+  color: var(--hero-muted);
+}
+
+/* Sign-in card gets the same banner. */
+.signin-card {
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.signin-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 10px;
+  background: var(--band);
+}
+
+.signin-card h1 {
+  font-size: 2rem;
+  line-height: 1.05;
+}
+
+.signin-mascot .raccoon {
+  background: var(--logo-bg);
+  border-radius: 50%;
+  padding: 8px;
+}
+
+.button-quiet {
+  color: var(--text);
+}
+
+.toolbar-link {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.km-bar {
+  height: 10px;
+}
+
+.km-fill {
+  background: linear-gradient(90deg, var(--accent), var(--partial));
+}
+
+.day-today .day-date,
+.day-today .day-name {
+  color: var(--today-ink);
+}
+
+/* Theme picker (temporary, for comparing looks). */
+.theme-picker {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--muted);
 }
