@@ -1,5 +1,7 @@
 // Plan JSON shapes (see data/demo-plan.json for an example).
 
+import type { RepSummary } from "./reps";
+
 export type SessionType =
   "intervals" | "tempo" | "long_run" | "easy" | "time_trial" | "race" | "strength";
 
@@ -93,6 +95,7 @@ export interface SessionResult {
   isManual: boolean;
   isToday: boolean;
   override: Override | null;
+  reps: RepSummary | null; // intervals and tempo: pace of the work laps, if found
 }
 
 export interface WeekResult {

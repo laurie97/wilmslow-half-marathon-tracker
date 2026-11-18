@@ -2,6 +2,7 @@
 
 import { STRAVA_OAUTH_BASE, requireEnv, stravaApiBase } from "./config";
 import type { AthleteRecord, Store } from "./db";
+import type { StoredLap } from "./db";
 import type { Activity } from "./types";
 
 export const STRAVA_SCOPE = "read,activity:read_all";
@@ -167,6 +168,39 @@ export async function fetchActivities(
     }
   }
   return activities;
+}
+
+interface StravaLap {
+  distance: number;
+  moving_time: number;
+  elapsed_time: number;
+  average_heartrate?: number;
+}
+
+/** Converts a Strava lap to the stored shape. */
+export function toLap(raw: StravaLap): StoredLap {
+  const lap: StoredLap = {
+    distanceM: raw.distance,
+    movingTimeS: raw.moving_time || raw.elapsed_time,
+    avgHr: raw.average_heartrate ? Math.round(raw.average_heartrate) : null,
+  };
+  return lap;
+}
+
+/** Fetches one activity's laps (one API call). */
+export async function fetchLaps(
+  accessToken: string,
+  activityId: number,
+): Promise<StoredLap[]> {
+  const response = await fetch(`${stravaApiBase()}/activities/${activityId}/laps`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw errorFor(response.status);
+  }
+  const laps = ((await response.json()) as StravaLap[]).map(toLap);
+  return laps;
 }
 
 /** True if the granted scope lets the app read activities. */

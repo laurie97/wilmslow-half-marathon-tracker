@@ -271,6 +271,7 @@ export function matchWeek(input: MatchInput): WeekResult {
       isManual,
       isToday: session.date === today,
       override: override ?? null,
+      reps: null, // filled in from laps by lib/progress
     };
     return result;
   });

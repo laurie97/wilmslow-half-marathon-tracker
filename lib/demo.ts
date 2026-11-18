@@ -3,9 +3,10 @@
 
 import demoPlan from "../data/demo-plan.json";
 import { addDays } from "./dates";
-import type { Store } from "./db";
+import type { Store, StoredLap } from "./db";
 import { isRunSession } from "./matching";
 import { validatePlan } from "./plan";
+import { repTargets } from "./reps";
 import type { Activity, Plan, PlanSession } from "./types";
 
 export const DEMO_ATHLETE_ID = 1;
@@ -225,4 +226,41 @@ export function demoActivitiesFor(
       movingTimeS: Math.round(a.movingTimeS * friend.scale),
     }));
   return activities;
+}
+
+/**
+ * Fake laps for an interval or tempo run: a warm-up lap, each rep a few
+ * seconds either side of its target with a jog recovery lap after it, and a
+ * cool-down lap. Varies with the activity ID so each run looks different.
+ */
+export function demoLaps(session: PlanSession, activity: Activity): StoredLap[] {
+  const laps: StoredLap[] = [];
+  const lap = (distanceM: number, timeS: number, hr: number): void => {
+    laps.push({
+      distanceM: Math.round(distanceM * 10) / 10,
+      movingTimeS: Math.round(timeS),
+      avgHr: hr,
+    });
+  };
+  const warmUpM = (session.warm_up_km ?? 1.5) * 1000;
+  lap(warmUpM, (warmUpM / 1000) * 365, 138);
+  let n = activity.id % 7;
+  for (const block of session.structure ?? []) {
+    const [target] = repTargets({ ...session, structure: [block] });
+    if (!target || target.distanceM === null) continue;
+    const pace = target.paceSPerKm ?? 280;
+    const recovery = (block as { recovery?: { duration_s?: number } }).recovery;
+    for (let rep = 0; rep < target.reps; rep++) {
+      n += 1;
+      const wobble = ((n * 37) % 9) - 5; // -5 to +3 s/km, mostly on target
+      const distanceM = target.distanceM + ((n * 13) % 11) - 5;
+      lap(distanceM, (distanceM / 1000) * (pace + wobble), 162 + (rep % 4));
+      if (recovery?.duration_s && rep < target.reps - 1) {
+        lap((recovery.duration_s / 400) * 1000, recovery.duration_s, 148);
+      }
+    }
+  }
+  const coolDownM = (session.cool_down_km ?? 1) * 1000;
+  lap(coolDownM, (coolDownM / 1000) * 375, 142);
+  return laps;
 }

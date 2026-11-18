@@ -24,6 +24,7 @@ export interface BestRun {
   movingTimeS: number;
   paceSPerKm: number;
   activities: Activity[];
+  repCount: number | null; // set when the pace is the reps' (from laps), not the whole run's
 }
 
 export const HALF_MARATHON_KM = 21.0975;
@@ -103,9 +104,24 @@ export function cumulativeDistance(
   return points;
 }
 
-/** Combines a session's matched runs into one effort. */
+/**
+ * A session's effort: its reps (from laps) where found, otherwise its matched
+ * runs combined into one.
+ */
 function sessionEffort(result: SessionResult): BestRun | null {
   const runs = result.matched;
+  if (result.reps && runs.length > 0) {
+    const fromReps: BestRun = {
+      title: result.session.title,
+      date: runs[0].date,
+      distanceKm: result.reps.distanceKm,
+      movingTimeS: result.reps.movingTimeS,
+      paceSPerKm: result.reps.paceSPerKm,
+      activities: runs,
+      repCount: result.reps.laps.length,
+    };
+    return fromReps;
+  }
   const distanceKm = runs.reduce((acc, a) => acc + a.distanceKm, 0);
   const movingTimeS = runs.reduce((acc, a) => acc + a.movingTimeS, 0);
   if (distanceKm <= 0 || movingTimeS <= 0) {
@@ -118,17 +134,24 @@ function sessionEffort(result: SessionResult): BestRun | null {
     movingTimeS,
     paceSPerKm: movingTimeS / distanceKm,
     activities: runs,
+    repCount: null,
   };
   return effort;
 }
 
-/** The fastest (lowest average pace) completed session of a given type. */
+/**
+ * The fastest (lowest average pace) completed session of a given type. Rep
+ * paces are only compared with rep paces: whole-run paces count only when no
+ * session of the type has reps from laps.
+ */
 export function fastestSession(weeks: WeekResult[], type: string): BestRun | null {
-  const efforts = weeks
+  const all = weeks
     .flatMap((w) => w.sessions)
     .filter((r) => r.session.type === type)
     .map(sessionEffort)
     .filter((e): e is BestRun => e !== null);
+  const withReps = all.filter((e) => e.repCount !== null);
+  const efforts = withReps.length > 0 ? withReps : all;
   const fastest = efforts.reduce<BestRun | null>(
     (best, e) => (best === null || e.paceSPerKm < best.paceSPerKm ? e : best),
     null,
@@ -153,6 +176,7 @@ export function longestRun(weeks: WeekResult[]): BestRun | null {
     movingTimeS: longest.movingTimeS,
     paceSPerKm: longest.movingTimeS / longest.distanceKm,
     activities: [longest],
+    repCount: null,
   };
   return result;
 }

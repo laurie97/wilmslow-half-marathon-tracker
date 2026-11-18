@@ -15,13 +15,19 @@ const MONTHS = [
   "Dec",
 ];
 
+/** "5:32" from seconds per km. */
+export function paceClock(secondsPerKm: number): string {
+  const perKm = Math.round(secondsPerKm);
+  const clock = `${Math.floor(perKm / 60)}:${String(perKm % 60).padStart(2, "0")}`;
+  return clock;
+}
+
 /** "5:32 /km" from moving time and distance. */
 export function formatPace(movingTimeS: number, distanceKm: number): string {
   if (distanceKm <= 0) {
     return "–";
   }
-  const perKm = Math.round(movingTimeS / distanceKm);
-  const pace = `${Math.floor(perKm / 60)}:${String(perKm % 60).padStart(2, "0")} /km`;
+  const pace = `${paceClock(movingTimeS / distanceKm)} /km`;
   return pace;
 }
 
