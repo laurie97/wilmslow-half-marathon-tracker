@@ -129,7 +129,8 @@ export default function ProgressDashboard() {
         <BestTile label="Longest run" best={stats.longestRun} show="distance" />
       </section>
       <p className="muted small bests-note">
-        Paces are the average for the whole run, warm-up and recoveries included.
+        Interval and tempo paces are the average of the reps, picked out from your laps.
+        Where no reps could be found, it&rsquo;s the whole run&rsquo;s pace.
       </p>
 
       <MedalCard
@@ -494,7 +495,9 @@ function BestTile({
           <p className="best-title">{best.title}</p>
           <p className="muted small">
             {formatShortDate(best.date)} ·{" "}
-            {show === "pace" ? formatKm(roundedKm) : pace}
+            {show === "pace"
+              ? `${best.repCount !== null ? `${best.repCount} reps, ` : "whole run, "}${formatKm(roundedKm)}`
+              : pace}
           </p>
           <a
             className="view-on-strava"

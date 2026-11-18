@@ -36,11 +36,29 @@ matched to planned sessions automatically.
   for 10 minutes to spare Strava's rate limit. Demo mode adds three demo friends.
 - **Ralph.** The app's mascot, a raccoon in a race bib
   (`public/raccoon.svg`; his head is the favicon). He comments on your progress at the
-  top of the progress page (`lib/ralph.ts`). Paces are whole-run averages,
-  because only Strava's activity summaries are fetched.
+  top of the progress page (`lib/ralph.ts`).
+- **Rep pace.** Interval and tempo sessions show the average pace of the reps, with
+  each rep's pace, picked out from your Strava laps (`lib/reps.ts`, see below). The
+  "Fastest intervals / tempo" records rank sessions by rep pace.
 - **Download / upload.** Download the plan with `status` and `actual` filled in, edit
   it elsewhere (e.g. with Claude), and upload it again. Progress is stored by session
   ID, so it survives a re-upload.
+
+### How reps are found
+
+For interval and tempo sessions, the laps of each matched run are fetched and the
+work laps picked out:
+
+1. **From the plan.** Each block of the session's `structure` (e.g. 5 × 700 m @ 4:35)
+   gives an expected distance and time per rep. A lap is a rep only if it's close to
+   both: within 15% of the distance, and no more than 20% slower (or 30% quicker) than
+   the target time, so a 700 m warm-up lap doesn't count. The closest laps win, up to
+   the planned number of reps. Used when at least half the planned reps are found.
+2. **From pace alone,** otherwise (e.g. a tempo lapped as one block): laps of 200 m or
+   more within 10% of the fastest lap's pace, provided some laps were clearly slower.
+
+Rep pace is the reps' total time over their total distance. Without laps, a session
+just shows its whole-run pace.
 
 ### How runs are matched
 
@@ -76,8 +94,8 @@ covered by `tests/prediction.test.ts`):
    down even without a fast run.
 
 Runs from the 8 weeks before the plan starts are fetched too, so there's a prediction
-from day one. Paces are whole-run averages (only activity summaries are fetched), so
-a hard session diluted by its warm-up counts for less than a parkrun.
+from day one. The prediction uses whole-run paces, so a hard session diluted by its
+warm-up counts for less than a parkrun.
 
 ## Running locally
 
@@ -157,11 +175,13 @@ applies its Next.js runtime automatically, so there's no `netlify.toml`.
 
 ## How data is handled
 
-- **Stored:** Strava tokens, your plan, and manual overrides (status plus pinned
-  activity IDs). Nothing else.
-- **Not stored:** activity data. Runs are fetched live from Strava on each load (one
-  `GET /athlete/activities` call covers the whole plan), in line with Strava's 7-day
-  caching limit.
+- **Stored:** Strava tokens, your plan, manual overrides (status plus pinned
+  activity IDs), and the laps of interval and tempo runs for up to 7 days (Strava's
+  caching limit). Nothing else.
+- **Not stored:** other activity data. Runs are fetched live from Strava on each load
+  (one `GET /athlete/activities` call covers the whole plan). Laps cost one
+  `GET /activities/{id}/laps` call per interval or tempo run, at most 40 per load, and
+  are cached so each run is fetched at most about once a week.
 - Tokens are sent in the `Authorization: Bearer` header and refreshed when within 5
   minutes of expiry. If Strava access is revoked, the app asks you to reconnect; if
   Strava's rate limit is hit, it says so and asks you to try again later.

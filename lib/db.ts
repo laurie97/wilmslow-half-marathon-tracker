@@ -1,7 +1,9 @@
 // Storage: Neon Postgres in production, an in-memory store in demo mode.
 //
-// Only tokens, the plan and manual overrides are stored. Strava activity data
-// is never stored (Strava's API terms limit caching to 7 days).
+// Stored: tokens, the plan and manual overrides. The only Strava activity data
+// kept is the laps of interval and tempo runs, for at most 7 days (Strava's API
+// terms limit caching to 7 days), so rep paces don't cost an API call per run
+// on every page load.
 
 import { neon } from "@neondatabase/serverless";
 import { databaseUrl, isDemo } from "./config";
@@ -20,6 +22,15 @@ export interface PlanRecord {
   updatedAt: string; // ISO timestamp
 }
 
+/** One lap of a Strava activity, as cached. */
+export interface StoredLap {
+  distanceM: number;
+  movingTimeS: number;
+  avgHr: number | null;
+}
+
+export const LAP_CACHE_DAYS = 7;
+
 export interface Store {
   upsertAthlete(athlete: AthleteRecord): Promise<void>;
   getAthlete(id: number): Promise<AthleteRecord | null>;
@@ -36,6 +47,9 @@ export interface Store {
   getOverrides(athleteId: number): Promise<Override[]>;
   /** Saves an override, or deletes it when both status and activityIds are null. */
   setOverride(athleteId: number, override: Override): Promise<void>;
+  /** Cached laps fetched in the last 7 days; older ones are deleted. */
+  getLaps(athleteId: number, activityIds: number[]): Promise<Map<number, StoredLap[]>>;
+  saveLaps(athleteId: number, activityId: number, laps: StoredLap[]): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -71,6 +85,13 @@ function ensureSchema(sql: Sql): Promise<void> {
         activity_ids bigint[] null,
         updated_at timestamptz not null default now(),
         primary key (athlete_id, session_id)
+      )`;
+      await sql`create table if not exists activity_laps (
+        athlete_id bigint not null references athletes(id) on delete cascade,
+        activity_id bigint not null,
+        laps jsonb not null,
+        fetched_at timestamptz not null default now(),
+        primary key (athlete_id, activity_id)
       )`;
     })().catch((error) => {
       schemaReady = null;
@@ -205,6 +226,41 @@ class NeonStore implements Store {
         activity_ids = excluded.activity_ids,
         updated_at = now()`;
   }
+
+  async getLaps(
+    athleteId: number,
+    activityIds: number[],
+  ): Promise<Map<number, StoredLap[]>> {
+    await ensureSchema(this.sql);
+    await this.sql`
+      delete from activity_laps
+      where fetched_at < now() - make_interval(days => ${LAP_CACHE_DAYS})`;
+    const found = new Map<number, StoredLap[]>();
+    if (activityIds.length === 0) {
+      return found;
+    }
+    const rows = await this.rows(this.sql`
+      select activity_id, laps from activity_laps
+      where athlete_id = ${athleteId} and activity_id = any(${activityIds}::bigint[])`);
+    for (const row of rows) {
+      found.set(Number(row.activity_id), row.laps as StoredLap[]);
+    }
+    return found;
+  }
+
+  async saveLaps(
+    athleteId: number,
+    activityId: number,
+    laps: StoredLap[],
+  ): Promise<void> {
+    await ensureSchema(this.sql);
+    await this.sql`
+      insert into activity_laps (athlete_id, activity_id, laps, fetched_at)
+      values (${athleteId}, ${activityId}, ${JSON.stringify(laps)}::jsonb, now())
+      on conflict (athlete_id, activity_id) do update set
+        laps = excluded.laps,
+        fetched_at = now()`;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -214,6 +270,7 @@ interface MemoryData {
   athletes: Map<number, AthleteRecord>;
   plans: Map<number, PlanRecord>;
   overrides: Map<number, Map<string, Override>>;
+  laps: Map<string, { at: number; laps: StoredLap[] }>; // "athlete:activity"
 }
 
 export class MemoryStore implements Store {
@@ -270,6 +327,32 @@ export class MemoryStore implements Store {
     }
     this.data.overrides.set(athleteId, forAthlete);
   }
+
+  async getLaps(
+    athleteId: number,
+    activityIds: number[],
+    nowMs: number = Date.now(),
+  ): Promise<Map<number, StoredLap[]>> {
+    const oldest = nowMs - LAP_CACHE_DAYS * 24 * 60 * 60 * 1000;
+    for (const [key, entry] of this.data.laps) {
+      if (entry.at < oldest) this.data.laps.delete(key);
+    }
+    const found = new Map<number, StoredLap[]>();
+    for (const id of activityIds) {
+      const entry = this.data.laps.get(`${athleteId}:${id}`);
+      if (entry) found.set(id, entry.laps);
+    }
+    return found;
+  }
+
+  async saveLaps(
+    athleteId: number,
+    activityId: number,
+    laps: StoredLap[],
+    nowMs: number = Date.now(),
+  ): Promise<void> {
+    this.data.laps.set(`${athleteId}:${activityId}`, { at: nowMs, laps });
+  }
 }
 
 function emptyData(): MemoryData {
@@ -277,6 +360,7 @@ function emptyData(): MemoryData {
     athletes: new Map(),
     plans: new Map(),
     overrides: new Map(),
+    laps: new Map(),
   };
   return data;
 }

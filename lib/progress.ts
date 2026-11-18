@@ -2,11 +2,28 @@
 
 import { appTimezone, isDemo } from "./config";
 import { addDays, epochSeconds, todayIn } from "./dates";
-import { getStore, type AthleteRecord, type PlanRecord, type Store } from "./db";
+import {
+  getStore,
+  type AthleteRecord,
+  type PlanRecord,
+  type Store,
+  type StoredLap,
+} from "./db";
 import { isRunActivity, matchPlan } from "./matching";
 import { WINDOW_DAYS } from "./prediction";
-import { fetchActivities, validAccessToken } from "./strava";
-import type { Activity, Exercise, Override, Plan, WeekResult } from "./types";
+import { REP_SESSION_TYPES, summariseReps, type Lap } from "./reps";
+import { StravaError, fetchActivities, fetchLaps, validAccessToken } from "./strava";
+import type {
+  Activity,
+  Exercise,
+  Override,
+  Plan,
+  PlanSession,
+  WeekResult,
+} from "./types";
+
+const MAX_LAP_FETCHES = 40; // per page load; any left over are fetched next time
+const LAP_FETCH_CONCURRENCY = 4;
 
 export interface PlanSummary {
   planId: string | null;
@@ -106,6 +123,86 @@ export async function computeWeeks(
   return weeks;
 }
 
+/** Every run matched to an interval or tempo session, with its session. */
+function repRuns(weeks: WeekResult[]): { session: PlanSession; activity: Activity }[] {
+  const runs = weeks
+    .flatMap((w) => w.sessions)
+    .filter((r) => REP_SESSION_TYPES.has(r.session.type))
+    .flatMap((r) => r.matched.map((activity) => ({ session: r.session, activity })));
+  return runs;
+}
+
+/**
+ * Laps for every interval and tempo run: from the 7-day cache where possible,
+ * otherwise from Strava (one call per run, at most MAX_LAP_FETCHES per load).
+ * Never throws: without laps, sessions just show their whole-run pace.
+ */
+export async function loadLaps(
+  ctx: AthleteContext,
+  weeks: WeekResult[],
+): Promise<Map<number, StoredLap[]>> {
+  const runs = repRuns(weeks);
+  let laps = new Map<number, StoredLap[]>();
+  if (isDemo()) {
+    const { demoLaps } = await import("./demo");
+    runs.forEach(({ session, activity }) =>
+      laps.set(activity.id, demoLaps(session, activity)),
+    );
+    return laps;
+  }
+  try {
+    const ids = [...new Set(runs.map((r) => r.activity.id))];
+    laps = await ctx.store.getLaps(ctx.athlete.id, ids);
+    const missing = ids.filter((id) => !laps.has(id)).slice(0, MAX_LAP_FETCHES);
+    if (missing.length === 0) {
+      return laps;
+    }
+    const token = await validAccessToken(ctx.athlete, ctx.store);
+    let stop = false;
+    const worker = async (): Promise<void> => {
+      while (!stop && missing.length > 0) {
+        const id = missing.shift() as number;
+        try {
+          const fetched = await fetchLaps(token, id);
+          laps.set(id, fetched);
+          await ctx.store.saveLaps(ctx.athlete.id, id, fetched);
+        } catch (error) {
+          // A rate limit or revoked token won't clear up mid-load: stop asking.
+          stop = error instanceof StravaError && error.code !== "error";
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: LAP_FETCH_CONCURRENCY }, worker));
+  } catch (error) {
+    console.error("Couldn't load laps", error);
+  }
+  return laps;
+}
+
+/** Fills in each interval and tempo session's rep pace from its runs' laps. */
+export function attachReps(
+  weeks: WeekResult[],
+  laps: Map<number, StoredLap[]>,
+): WeekResult[] {
+  const withReps = weeks.map((week) => ({
+    ...week,
+    sessions: week.sessions.map((result) => {
+      if (!REP_SESSION_TYPES.has(result.session.type)) {
+        return result;
+      }
+      const runLaps: Lap[] = [...result.matched]
+        .sort((a, b) => a.startLocal.localeCompare(b.startLocal))
+        .flatMap((a) =>
+          (laps.get(a.id) ?? []).map((lap) => ({ ...lap, activityId: a.id })),
+        );
+      const reps = runLaps.length > 0 ? summariseReps(result.session, runLaps) : null;
+      const updated = { ...result, reps };
+      return updated;
+    }),
+  }));
+  return withReps;
+}
+
 /** Picks the "a" goal time, or the first goal with a time. */
 function goalTime(plan: Plan): string | null {
   const goals = plan.race?.goals ?? {};
@@ -165,6 +262,7 @@ export async function buildProgress(athleteId: number): Promise<ProgressResponse
   if (record) {
     const activities = await loadActivities(ctx, record.plan);
     weeks = matchPlan(record.plan, activities, ctx.overrides, ctx.today);
+    weeks = attachReps(weeks, await loadLaps(ctx, weeks));
     const start = record.plan.weeks[0].week_commencing;
     earlierRuns = activities.filter((a) => isRunActivity(a) && a.date < start);
   }

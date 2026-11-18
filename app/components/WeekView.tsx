@@ -1,8 +1,15 @@
 "use client";
 
 import { addDays, dayName } from "@/lib/dates";
-import { formatKm, formatMinutes, formatShortDate } from "@/lib/format";
+import {
+  formatKm,
+  formatMinutes,
+  formatPace,
+  formatShortDate,
+  paceClock,
+} from "@/lib/format";
 import type { PlanSummary } from "@/lib/progress";
+import type { RepSummary } from "@/lib/reps";
 import type { SessionResult, SessionStatus, WeekResult } from "@/lib/types";
 import RunRow from "./RunRow";
 
@@ -178,6 +185,7 @@ function SessionCard({
       </button>
       {matched.length > 0 && (
         <div className="session-runs">
+          {result.reps && <Reps reps={result.reps} />}
           {matched.map((a) => (
             <RunRow key={a.id} activity={a} showDay={a.date !== session.date} />
           ))}
@@ -186,4 +194,32 @@ function SessionCard({
     </article>
   );
   return card;
+}
+
+/** Average rep pace (from laps) against the target, with each rep's pace. */
+function Reps({ reps }: { reps: RepSummary }) {
+  const target =
+    reps.targetLabel ??
+    (reps.targetPaceSPerKm !== null ? paceClock(reps.targetPaceSPerKm) : null);
+  const context: string[] = [];
+  if (target) context.push(`target ${target}`);
+  if (reps.method === "plan" && reps.plannedReps !== null) {
+    context.push(`${reps.laps.length} of ${reps.plannedReps} reps`);
+  } else {
+    context.push(`${reps.laps.length} fastest laps`);
+  }
+  const splits = reps.laps.map((lap) =>
+    paceClock(lap.movingTimeS / (lap.distanceM / 1000)),
+  );
+  const block = (
+    <div className="reps">
+      <p className="reps-head">
+        <span className="reps-label">Reps</span>
+        <strong>{formatPace(reps.movingTimeS, reps.distanceKm)}</strong>
+        <span className="reps-context">{context.join(" · ")}</span>
+      </p>
+      <p className="reps-splits">{splits.join(" · ")}</p>
+    </div>
+  );
+  return block;
 }

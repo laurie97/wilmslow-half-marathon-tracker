@@ -727,6 +727,36 @@ a {
   padding: 0 12px;
 }
 
+/* Reps (interval and tempo pace from laps) ------------------------------ */
+
+.reps {
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.reps-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.reps-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.reps-context,
+.reps-splits {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Runs ------------------------------------------------------------------- */
 
 .run {
