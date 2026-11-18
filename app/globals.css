@@ -1642,19 +1642,39 @@ h1,
   color: var(--today-ink);
 }
 
-/* Day/night toggle in the header. */
+/* Day/night toggle in the header: a day raccoon and a night raccoon. */
 .theme-toggle {
-  display: inline-grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
   border: none;
   background: var(--hero-tile);
-  color: var(--hero-text);
-  font-size: 1.05rem;
-  line-height: 1;
   cursor: pointer;
+}
+
+.theme-option {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  opacity: 0.45;
+  transition:
+    opacity 0.2s,
+    background-color 0.2s;
+}
+
+.theme-option.active {
+  opacity: 1;
+}
+
+.theme-day.active {
+  background: #cfe6f5;
+}
+
+.theme-night.active {
+  background: #26304a;
 }
 
 .top-actions {
