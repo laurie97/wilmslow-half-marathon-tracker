@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Barlow_Condensed, Bricolage_Grotesque, Space_Grotesk } from "next/font/google";
+import { Bricolage_Grotesque, Space_Grotesk } from "next/font/google";
+import { DEFAULT_THEME, THEME_KEY, THEMES } from "@/lib/theme";
 import "./globals.css";
 
 // Display fonts, one per theme. Exposed as CSS variables for globals.css.
@@ -13,18 +14,9 @@ const space = Space_Grotesk({
   display: "swap",
   variable: "--font-space",
 });
-const barlow = Barlow_Condensed({
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["600", "700", "800"],
-  variable: "--font-barlow",
-});
 
-const THEMES = ["bandit", "midnight", "raceday"] as const;
-const DEFAULT_THEME = "bandit";
-
-// Runs before paint: ?theme=<name> picks a theme and remembers it.
-const THEME_SCRIPT = `(function(){try{var ok=${JSON.stringify(THEMES)};var t=new URLSearchParams(location.search).get("theme");if(ok.indexOf(t)>-1){localStorage.setItem("theme",t)}else{t=localStorage.getItem("theme")}if(ok.indexOf(t)>-1){document.documentElement.dataset.theme=t}}catch(e){}})();`;
+// Runs before paint so a saved theme shows without a flash of the default.
+const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("${THEME_KEY}");if(${JSON.stringify(THEMES)}.indexOf(t)>-1){document.documentElement.dataset.theme=t}}catch(e){}})();`;
 
 export const metadata: Metadata = {
   title: "Wilmslow Half tracker",
@@ -34,12 +26,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#2f2b29",
+  themeColor: "#15171a",
 };
 
 /** Root HTML shell. */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const fonts = `${bricolage.variable} ${space.variable} ${barlow.variable}`;
+  const fonts = `${bricolage.variable} ${space.variable}`;
   const layout = (
     <html
       lang="en-GB"

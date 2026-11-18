@@ -10,6 +10,7 @@ import PlanMenu from "./PlanMenu";
 import PoweredByStrava from "./PoweredByStrava";
 import RaccoonLogo from "./RaccoonLogo";
 import SessionSheet from "./SessionSheet";
+import ThemeToggle from "./ThemeToggle";
 import WeekView from "./WeekView";
 
 /** Index of the week to open on: the current week, else the nearest one. */
@@ -110,11 +111,14 @@ export default function Tracker() {
               <h1>{plan?.raceName ?? "Wilmslow Half Marathon"}</h1>
             </div>
           </div>
-          <form action="/api/auth/logout" method="post">
-            <button type="submit" className="link-button">
-              Log out
-            </button>
-          </form>
+          <div className="top-actions">
+            <ThemeToggle />
+            <form action="/api/auth/logout" method="post">
+              <button type="submit" className="link-button">
+                Log out
+              </button>
+            </form>
+          </div>
         </div>
         {plan && (
           <div className="stats">
