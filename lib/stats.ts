@@ -4,12 +4,14 @@ import { addDays } from "./dates";
 import { isRunSession } from "./matching";
 import type { Activity, PlanSession, SessionResult, WeekResult } from "./types";
 
-export interface RunCounts {
-  total: number; // run sessions in the whole plan
-  due: number; // run sessions dated before today, plus any already run early
+export interface SessionCounts {
+  total: number; // sessions of this kind in the whole plan
+  due: number; // sessions dated before today, plus any already done early
   done: number;
   partial: number;
 }
+
+export type RunCounts = SessionCounts;
 
 export interface DistancePoint {
   date: string;
@@ -31,6 +33,7 @@ export const HALF_MARATHON_KM = 21.0975;
 
 export interface SeasonStats {
   runs: RunCounts;
+  strength: SessionCounts;
   distance: DistancePoint[];
   expectedToDateKm: number;
   actualToDateKm: number;
@@ -46,19 +49,42 @@ function round1(km: number): number {
   return rounded;
 }
 
-/** Counts run sessions that are due, done and partially done. */
-export function countRuns(weeks: WeekResult[], today: string): RunCounts {
-  const results = weeks
-    .flatMap((w) => w.sessions)
-    .filter((r) => isRunSession(r.session));
-  const ran = (r: SessionResult): boolean =>
-    r.status === "done" || r.status === "partial";
-  const counts: RunCounts = {
+export function isStrengthSession(session: PlanSession): boolean {
+  const result = session.type === "strength";
+  return result;
+}
+
+/** True when a session was done in full or partly. */
+export function wasDone(result: SessionResult): boolean {
+  const done = result.status === "done" || result.status === "partial";
+  return done;
+}
+
+/** Counts the sessions picked by `include` that are due, done and partially done. */
+export function countSessions(
+  weeks: WeekResult[],
+  today: string,
+  include: (session: PlanSession) => boolean,
+): SessionCounts {
+  const results = weeks.flatMap((w) => w.sessions).filter((r) => include(r.session));
+  const counts: SessionCounts = {
     total: results.length,
-    due: results.filter((r) => r.session.date < today || ran(r)).length,
+    due: results.filter((r) => r.session.date < today || wasDone(r)).length,
     done: results.filter((r) => r.status === "done").length,
     partial: results.filter((r) => r.status === "partial").length,
   };
+  return counts;
+}
+
+/** Counts run sessions that are due, done and partially done. */
+export function countRuns(weeks: WeekResult[], today: string): RunCounts {
+  const counts = countSessions(weeks, today, isRunSession);
+  return counts;
+}
+
+/** Counts strength sessions (ticked by hand) that are due, done and partially done. */
+export function countStrength(weeks: WeekResult[], today: string): SessionCounts {
+  const counts = countSessions(weeks, today, isStrengthSession);
   return counts;
 }
 
@@ -190,6 +216,7 @@ export function seasonStats(weeks: WeekResult[], today: string): SeasonStats {
   const latest = upToToday[upToToday.length - 1];
   const stats: SeasonStats = {
     runs: countRuns(weeks, today),
+    strength: countStrength(weeks, today),
     distance,
     expectedToDateKm: beforeToday[beforeToday.length - 1]?.expectedKm ?? 0,
     actualToDateKm: latest?.actualKm ?? 0,

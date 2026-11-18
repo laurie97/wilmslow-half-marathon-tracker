@@ -25,15 +25,17 @@ matched to planned sessions automatically.
 - **Season strip.** One square per week: green (≥ 80% complete), amber (≥ 50%), red,
   grey for future weeks. Tap a square to jump to that week.
 - **Progress page.** A dial of runs done out of runs planned (with a tick for how many
-  were due by today), cumulative distance run against the plan, and the fastest
+  were due by today), a matching dial for strength sessions (done, partial, due),
+  cumulative distance run against the plan, and the fastest
   intervals, fastest tempo and longest run so far, plus a row of medals counting
   how many half marathons' worth you've run.
 - **Race prediction.** On the progress page, below runs done and distance: the half marathon time you'd
   run if you raced today, how far it is from your goal, and a chart of how the
   prediction has moved over the plan. It updates as you add runs (see below).
 - **Compare athletes.** From the progress page: every athlete with a plan, side by
-  side, with the share of their planned runs done and their cumulative distance over
-  time (`lib/compare.ts`). Only first names are shown. Other athletes' data is cached
+  side, with the share of their planned runs and strength sessions done and their
+  cumulative distance over time (`lib/compare.ts`). The distance chart's axis goes up
+  to the whole plan's distance, with a dashed line at your plan's total. Only first names are shown. Other athletes' data is cached
   for 10 minutes to spare Strava's rate limit. Demo mode adds three demo friends.
 - **Ralph.** The app's mascot, a raccoon in a race bib
   (`public/raccoon.svg`; his head is the favicon). He comments on your progress at the
@@ -208,7 +210,7 @@ app/                 Next.js App Router pages, components and API routes
   api/auth/*         Strava sign-in, callback and logout
   api/plan           GET downloads the plan with progress, POST uploads a plan
   api/progress       Everything the page needs in one call
-  api/compare        Runs done and distance for every athlete with a plan
+  api/compare        Runs, strength sessions and distance for every athlete with a plan
   api/override       Manual status / pinned runs for a session
 lib/matching.ts      Matching rules (pure, unit-tested)
 lib/plan.ts          Plan validation and export

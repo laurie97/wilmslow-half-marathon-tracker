@@ -11,7 +11,7 @@ import {
   seasonStats,
   type BestRun,
   type DistancePoint,
-  type RunCounts,
+  type SessionCounts,
 } from "@/lib/stats";
 import { CHART, PLOT_H, indexAt, niceStep, weekTicks, xAt } from "./chart";
 import ErrorCard, { type ApiError } from "./ErrorCard";
@@ -19,7 +19,7 @@ import PoweredByStrava from "./PoweredByStrava";
 import PredictionCard from "./PredictionCard";
 import RaccoonLogo from "./RaccoonLogo";
 
-/** The progress page: runs dial, cumulative distance and best runs. */
+/** The progress page: runs and strength dials, cumulative distance and best runs. */
 export default function ProgressDashboard() {
   const [data, setData] = useState<ProgressResponse | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
@@ -102,8 +102,15 @@ export default function ProgressDashboard() {
 
       <section className="card panel">
         <h2>Runs done</h2>
-        <RunsDial runs={stats.runs} />
+        <SessionDial counts={stats.runs} noun="runs" />
       </section>
+
+      {stats.strength.total > 0 && (
+        <section className="card panel">
+          <h2>Strength sessions</h2>
+          <SessionDial counts={stats.strength} noun="sessions" />
+        </section>
+      )}
 
       <section className="card panel">
         <h2>Distance</h2>
@@ -145,7 +152,7 @@ export default function ProgressDashboard() {
   return page;
 }
 
-// Runs dial ---------------------------------------------------------------
+// Runs and strength dials ---------------------------------------------------
 
 const DIAL = { cx: 100, cy: 100, r: 80, width: 16 };
 
@@ -167,40 +174,43 @@ function dialArc(from: number, to: number): string {
   return path;
 }
 
-/** Half-circle gauge: runs done and partly done out of all planned runs. */
-function RunsDial({ runs }: { runs: RunCounts }) {
-  const total = Math.max(runs.total, 1);
-  const doneEnd = runs.done / total;
-  const partialEnd = (runs.done + runs.partial) / total;
-  const due = runs.due / total;
+/**
+ * Half-circle gauge: sessions done and partly done out of all planned, with a
+ * tick for how many were due by today. `noun` is "runs" or "sessions".
+ */
+function SessionDial({ counts, noun }: { counts: SessionCounts; noun: string }) {
+  const total = Math.max(counts.total, 1);
+  const doneEnd = counts.done / total;
+  const partialEnd = (counts.done + counts.partial) / total;
+  const due = counts.due / total;
   const gap = 0.006; // 2px surface gap between segments
-  const ran = runs.done + runs.partial;
+  const ran = counts.done + counts.partial;
   const [tickIn, tickOut] = [dialPoint(due, DIAL.r - 13), dialPoint(due, DIAL.r + 13)];
-  const label = `${ran} of ${runs.total} planned runs done (${runs.done} in full, ${runs.partial} partly). ${runs.due} were due by today.`;
-  const pace = runs.due > 0 ? Math.round((ran / runs.due) * 100) : null;
+  const label = `${ran} of ${counts.total} planned ${noun} done (${counts.done} in full, ${counts.partial} partly). ${counts.due} were due by today.`;
+  const pace = counts.due > 0 ? Math.round((ran / counts.due) * 100) : null;
 
   const dial = (
     <div className="dial">
       <svg viewBox="0 0 200 116" role="img" aria-label={label}>
         <path d={dialArc(0, 1)} className="dial-track" strokeWidth={DIAL.width} />
-        {runs.done > 0 && (
+        {counts.done > 0 && (
           <path
             d={dialArc(0, doneEnd)}
             className="dial-done"
             strokeWidth={DIAL.width}
           />
         )}
-        {runs.partial > 0 && (
+        {counts.partial > 0 && (
           <path
             d={dialArc(
-              Math.min(doneEnd + (runs.done > 0 ? gap : 0), partialEnd),
+              Math.min(doneEnd + (counts.done > 0 ? gap : 0), partialEnd),
               partialEnd,
             )}
             className="dial-partial"
             strokeWidth={DIAL.width}
           />
         )}
-        {runs.due > 0 && (
+        {counts.due > 0 && (
           <line
             x1={tickIn[0]}
             y1={tickIn[1]}
@@ -210,29 +220,29 @@ function RunsDial({ runs }: { runs: RunCounts }) {
           />
         )}
         <text x={DIAL.cx} y={DIAL.cy - 14} className="dial-value" textAnchor="middle">
-          {ran}/{runs.total}
+          {ran}/{counts.total}
         </text>
         <text x={DIAL.cx} y={DIAL.cy + 4} className="dial-caption" textAnchor="middle">
-          runs done
+          {noun} done
         </text>
       </svg>
       <ul className="legend">
         <li>
           <span className="key key-done" />
-          {runs.done} done
+          {counts.done} done
         </li>
         <li>
           <span className="key key-partial" />
-          {runs.partial} partial
+          {counts.partial} partial
         </li>
         <li>
           <span className="key key-tick" />
-          {runs.due} due by today
+          {counts.due} due by today
         </li>
       </ul>
       {pace !== null && (
         <p className="muted small center">
-          {pace}% of the runs due so far have been done.
+          {pace}% of the {noun} due so far have been done.
         </p>
       )}
     </div>

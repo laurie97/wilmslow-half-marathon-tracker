@@ -20,6 +20,29 @@ export function niceStep(max: number): number {
   return step;
 }
 
+/**
+ * A clean axis from 0 to just above `max`: the step (1, 2, 2.5 or 5 times a
+ * power of ten) giving 3 to 6 ticks with the lowest top, the larger step on a tie.
+ */
+export function niceAxis(max: number): { step: number; top: number } {
+  const value = Math.max(max, 1);
+  const fallback = niceStep(value);
+  let best = { step: fallback, top: Math.ceil(value / fallback) * fallback };
+  const magnitude = 10 ** Math.floor(Math.log10(value));
+  for (const scale of [magnitude / 10, magnitude]) {
+    for (const m of [1, 2, 2.5, 5]) {
+      const step = m * scale;
+      const count = Math.ceil(value / step - 1e-9);
+      const top = Math.round(count * step * 1e6) / 1e6;
+      const fits = count >= 3 && count <= 6;
+      if (fits && (top < best.top || (top === best.top && step > best.step))) {
+        best = { step, top };
+      }
+    }
+  }
+  return best;
+}
+
 /** x position of the i-th of n daily points. */
 export function xAt(i: number, n: number): number {
   const x = CHART.left + (n > 1 ? (i / (n - 1)) * PLOT_W : 0);
