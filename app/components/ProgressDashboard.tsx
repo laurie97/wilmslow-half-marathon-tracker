@@ -100,17 +100,18 @@ export default function ProgressDashboard() {
         <p className="speech">{ralphSays(stats.runs)}</p>
       </section>
 
-      <section className="card panel">
-        <h2>Runs done</h2>
-        <SessionDial counts={stats.runs} noun="runs" />
-      </section>
-
-      {stats.strength.total > 0 && (
+      <div className={stats.strength.total > 0 ? "dials dials-pair" : "dials"}>
         <section className="card panel">
-          <h2>Strength sessions</h2>
-          <SessionDial counts={stats.strength} noun="sessions" />
+          <h2>Runs done</h2>
+          <SessionDial counts={stats.runs} noun="runs" />
         </section>
-      )}
+        {stats.strength.total > 0 && (
+          <section className="card panel">
+            <h2>Strength done</h2>
+            <SessionDial counts={stats.strength} noun="sessions" />
+          </section>
+        )}
+      </div>
 
       <section className="card panel">
         <h2>Distance</h2>
@@ -242,7 +243,7 @@ function SessionDial({ counts, noun }: { counts: SessionCounts; noun: string }) 
       </ul>
       {pace !== null && (
         <p className="muted small center">
-          {pace}% of the {noun} due so far have been done.
+          {pace}% of the {noun} due so far done.
         </p>
       )}
     </div>
