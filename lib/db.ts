@@ -30,6 +30,8 @@ export interface Store {
     expiresAt: number,
   ): Promise<void>;
   getPlan(athleteId: number): Promise<PlanRecord | null>;
+  /** IDs of every athlete who has uploaded a plan, oldest sign-up first. */
+  listAthletesWithPlans(): Promise<number[]>;
   savePlan(athleteId: number, plan: Plan): Promise<PlanRecord>;
   getOverrides(athleteId: number): Promise<Override[]>;
   /** Saves an override, or deletes it when both status and activityIds are null. */
@@ -150,6 +152,15 @@ class NeonStore implements Store {
     return record;
   }
 
+  async listAthletesWithPlans(): Promise<number[]> {
+    await ensureSchema(this.sql);
+    const rows = await this.rows(this.sql`
+      select a.id from athletes a join plans p on p.athlete_id = a.id
+      order by a.created_at, a.id`);
+    const ids = rows.map((row) => Number(row.id));
+    return ids;
+  }
+
   async savePlan(athleteId: number, plan: Plan): Promise<PlanRecord> {
     await ensureSchema(this.sql);
     const rows = await this.rows(this.sql`
@@ -232,6 +243,11 @@ export class MemoryStore implements Store {
   async getPlan(athleteId: number): Promise<PlanRecord | null> {
     const record = this.data.plans.get(athleteId) ?? null;
     return record;
+  }
+
+  async listAthletesWithPlans(): Promise<number[]> {
+    const ids = [...this.data.athletes.keys()].filter((id) => this.data.plans.has(id));
+    return ids;
   }
 
   async savePlan(athleteId: number, plan: Plan): Promise<PlanRecord> {

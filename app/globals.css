@@ -12,6 +12,16 @@
   --today: #fff8e6;
   --strava: #fc4c02;
   --radius: 14px;
+  /* Categorical series colours (compare page), assigned in this order. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #6250d6;
+  --series-8: #e34948;
+  --series-other: #9ca2aa;
   color-scheme: light;
 }
 
@@ -1309,4 +1319,86 @@ a {
   border-left: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   transform: translateY(-50%) rotate(45deg);
+}
+
+/* Compare page ----------------------------------------------------------- */
+
+.header-link {
+  flex-shrink: 0;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.compare-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: right;
+  padding: 0 0 6px;
+}
+
+.compare-table td {
+  text-align: right;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.compare-table th:first-child,
+.compare-table td:first-child {
+  text-align: left;
+}
+
+.compare-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compare-table .is-you td:first-child {
+  font-weight: 600;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.block {
+  display: block;
+}
+
+.compare-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.compare-dot {
+  stroke: var(--card);
+  stroke-width: 2;
+}
+
+.chart .line-label {
+  font-size: 10px;
+  fill: var(--text);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
