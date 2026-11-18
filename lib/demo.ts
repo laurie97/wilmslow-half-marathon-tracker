@@ -10,8 +10,9 @@ import type { Activity, Plan, PlanSession } from "./types";
 
 export const DEMO_ATHLETE_ID = 1;
 
-// Other demo athletes on the same plan, for the compare page: each runs a
-// different share of the planned distance and skips every nth run.
+// Other demo athletes on the same plan, all sharing, for the compare page:
+// each runs a different share of the planned distance and skips every nth run.
+// The main demo athlete starts not sharing, to show the opt-in.
 const DEMO_FRIENDS = [
   { id: 2, firstname: "Sam", scale: 0.9, skipEvery: 4 },
   { id: 3, firstname: "Priya", scale: 1.12, skipEvery: 9 },
@@ -48,6 +49,7 @@ export async function seedDemoStore(store: Store): Promise<void> {
       expiresAt: 4102444800,
     });
     await store.savePlan(friend.id, plan);
+    await store.setSharing(friend.id, true);
   }
   const today = demoToday();
   for (const [index, week] of plan.weeks.slice(0, 3).entries()) {

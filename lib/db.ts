@@ -30,8 +30,14 @@ export interface Store {
     expiresAt: number,
   ): Promise<void>;
   getPlan(athleteId: number): Promise<PlanRecord | null>;
-  /** IDs of every athlete who has uploaded a plan, oldest sign-up first. */
-  listAthletesWithPlans(): Promise<number[]>;
+  /**
+   * IDs of every athlete who has uploaded a plan and opted in to sharing
+   * their progress, oldest sign-up first.
+   */
+  listSharingAthletes(): Promise<number[]>;
+  /** Whether the athlete has opted in to showing their progress to others. */
+  getSharing(athleteId: number): Promise<boolean>;
+  setSharing(athleteId: number, share: boolean): Promise<void>;
   savePlan(athleteId: number, plan: Plan): Promise<PlanRecord>;
   getOverrides(athleteId: number): Promise<Override[]>;
   /** Saves an override, or deletes it when both status and activityIds are null. */
@@ -72,6 +78,9 @@ function ensureSchema(sql: Sql): Promise<void> {
         updated_at timestamptz not null default now(),
         primary key (athlete_id, session_id)
       )`;
+      // Opt-in for the compare page; off until the athlete turns it on.
+      await sql`alter table athletes
+        add column if not exists share_progress boolean not null default false`;
     })().catch((error) => {
       schemaReady = null;
       throw error;
@@ -152,13 +161,30 @@ class NeonStore implements Store {
     return record;
   }
 
-  async listAthletesWithPlans(): Promise<number[]> {
+  async listSharingAthletes(): Promise<number[]> {
     await ensureSchema(this.sql);
     const rows = await this.rows(this.sql`
       select a.id from athletes a join plans p on p.athlete_id = a.id
+      where a.share_progress
       order by a.created_at, a.id`);
     const ids = rows.map((row) => Number(row.id));
     return ids;
+  }
+
+  async getSharing(athleteId: number): Promise<boolean> {
+    await ensureSchema(this.sql);
+    const rows = await this.rows(
+      this.sql`select share_progress from athletes where id = ${athleteId}`,
+    );
+    const share = rows[0]?.share_progress === true;
+    return share;
+  }
+
+  async setSharing(athleteId: number, share: boolean): Promise<void> {
+    await ensureSchema(this.sql);
+    await this.sql`
+      update athletes set share_progress = ${share}, updated_at = now()
+      where id = ${athleteId}`;
   }
 
   async savePlan(athleteId: number, plan: Plan): Promise<PlanRecord> {
@@ -214,6 +240,7 @@ interface MemoryData {
   athletes: Map<number, AthleteRecord>;
   plans: Map<number, PlanRecord>;
   overrides: Map<number, Map<string, Override>>;
+  sharing: Set<number>; // athletes who opted in to the compare page
 }
 
 export class MemoryStore implements Store {
@@ -245,9 +272,24 @@ export class MemoryStore implements Store {
     return record;
   }
 
-  async listAthletesWithPlans(): Promise<number[]> {
-    const ids = [...this.data.athletes.keys()].filter((id) => this.data.plans.has(id));
+  async listSharingAthletes(): Promise<number[]> {
+    const ids = [...this.data.athletes.keys()].filter(
+      (id) => this.data.plans.has(id) && this.data.sharing.has(id),
+    );
     return ids;
+  }
+
+  async getSharing(athleteId: number): Promise<boolean> {
+    const share = this.data.sharing.has(athleteId);
+    return share;
+  }
+
+  async setSharing(athleteId: number, share: boolean): Promise<void> {
+    if (share) {
+      this.data.sharing.add(athleteId);
+    } else {
+      this.data.sharing.delete(athleteId);
+    }
   }
 
   async savePlan(athleteId: number, plan: Plan): Promise<PlanRecord> {
@@ -277,6 +319,7 @@ function emptyData(): MemoryData {
     athletes: new Map(),
     plans: new Map(),
     overrides: new Map(),
+    sharing: new Set(),
   };
   return data;
 }

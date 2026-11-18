@@ -1,4 +1,4 @@
-// Side-by-side progress for every athlete using the app: runs done and distance.
+// Side-by-side progress for athletes who opt in to sharing: runs done and distance.
 
 import { addDays } from "./dates";
 import { getStore } from "./db";
@@ -33,6 +33,8 @@ export interface CompareResponse {
   dates: string[]; // every day from the earliest plan start to the latest plan end
   athletes: CompareAthlete[];
   unavailable: string[]; // names of athletes whose Strava data couldn't be loaded
+  sharing: boolean; // whether the viewer has opted in
+  othersSharing: number; // how many other athletes have opted in
 }
 
 interface Loaded {
@@ -125,7 +127,14 @@ export function buildComparison(
     };
     return athlete;
   });
-  const response: CompareResponse = { today, dates, athletes, unavailable };
+  const response: CompareResponse = {
+    today,
+    dates,
+    athletes,
+    unavailable,
+    sharing: false,
+    othersSharing: 0,
+  };
   return response;
 }
 
@@ -151,14 +160,19 @@ async function loadWeeks(
 }
 
 /**
- * Builds /api/compare: every athlete with a plan. The viewer's own data is
- * always fresh; other athletes' is cached for 10 minutes to spare Strava's
- * rate limit. Another athlete whose data fails to load is listed as
- * unavailable; a failure loading the viewer's own data is thrown.
+ * Builds /api/compare. Sharing is opt-in and two-way: a viewer who shares
+ * sees everyone else who shares; one who doesn't sees only themselves. The
+ * viewer's own data is always fresh; other athletes' is cached for 10 minutes
+ * to spare Strava's rate limit. Another athlete whose data fails to load is
+ * listed as unavailable; a failure loading the viewer's own data is thrown.
  */
 export async function loadComparison(viewerId: number): Promise<CompareResponse> {
   const store = await getStore();
-  const ids = await store.listAthletesWithPlans();
+  const [sharing, sharingIds] = await Promise.all([
+    store.getSharing(viewerId),
+    store.listSharingAthletes(),
+  ]);
+  const ids = sharing ? sharingIds : [viewerId];
   const settled = await Promise.allSettled(
     ids.map((id, order) => loadWeeks(id, order, id === viewerId)),
   );
@@ -177,5 +191,7 @@ export async function loadComparison(viewerId: number): Promise<CompareResponse>
   }
   const comparison = buildComparison(loaded, viewerId, await todayDate());
   comparison.unavailable = unavailable;
+  comparison.sharing = sharing;
+  comparison.othersSharing = sharingIds.filter((id) => id !== viewerId).length;
   return comparison;
 }

@@ -30,10 +30,13 @@ matched to planned sessions automatically.
 - **Race prediction.** On the progress page, below runs done and distance: the half marathon time you'd
   run if you raced today, how far it is from your goal, and a chart of how the
   prediction has moved over the plan. It updates as you add runs (see below).
-- **Compare athletes.** From the progress page: every athlete with a plan, side by
-  side, with the share of their planned runs done and their cumulative distance over
-  time (`lib/compare.ts`). Only first names are shown. Other athletes' data is cached
-  for 10 minutes to spare Strava's rate limit. Demo mode adds three demo friends.
+- **Compare athletes.** From the progress page: athletes side by side, with the
+  share of their planned runs done and their cumulative distance over time
+  (`lib/compare.ts`). Sharing is opt-in and two-way: nobody's progress is shown until
+  they choose "Share my progress", and you only see others once you share too. Only
+  first names, runs done and distance are shown. Other athletes' data is cached for
+  10 minutes to spare Strava's rate limit. Demo mode adds three demo friends who
+  share.
 - **Ralph.** The app's mascot, a raccoon in a race bib
   (`public/raccoon.svg`; his head is the favicon). He comments on your progress at the
   top of the progress page (`lib/ralph.ts`). Paces are whole-run averages,
@@ -187,7 +190,8 @@ app/                 Next.js App Router pages, components and API routes
   api/auth/*         Strava sign-in, callback and logout
   api/plan           GET downloads the plan with progress, POST uploads a plan
   api/progress       Everything the page needs in one call
-  api/compare        Runs done and distance for every athlete with a plan
+  api/compare        Runs done and distance for athletes who share
+  api/sharing        POST { share: true | false } to opt in or out
   api/override       Manual status / pinned runs for a session
 lib/matching.ts      Matching rules (pure, unit-tested)
 lib/plan.ts          Plan validation and export

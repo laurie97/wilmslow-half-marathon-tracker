@@ -54,3 +54,33 @@ describe("buildComparison", () => {
     expect(jordan.runsDone).toBeLessThan(alex.runsDone);
   });
 });
+
+describe("loadComparison sharing", () => {
+  it("shows others only to athletes who share, and only those who share", async () => {
+    process.env.DEMO_MODE = "1";
+    process.env.DEMO_TODAY = TODAY;
+    const { getStore } = await import("../lib/db");
+    const { loadComparison } = await import("../lib/compare");
+    const store = await getStore();
+
+    const before = await loadComparison(1);
+    expect(before.sharing).toBe(false);
+    expect(before.othersSharing).toBe(3);
+    expect(before.athletes.map((a) => a.name)).toEqual(["Alex"]);
+
+    await store.setSharing(1, true);
+    const after = await loadComparison(1);
+    expect(after.sharing).toBe(true);
+    expect(after.athletes.map((a) => a.name)).toEqual([
+      "Alex",
+      "Sam",
+      "Priya",
+      "Jordan",
+    ]);
+
+    await store.setSharing(3, false);
+    const optedOut = await loadComparison(1);
+    expect(optedOut.athletes.map((a) => a.name)).toEqual(["Alex", "Sam", "Jordan"]);
+    expect(optedOut.othersSharing).toBe(2);
+  });
+});

@@ -1402,3 +1402,17 @@ a {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+.sharing {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.sharing .button-primary {
+  margin-top: 6px;
+}
+
+.error-text {
+  color: var(--missed);
+}

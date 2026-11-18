@@ -25,7 +25,7 @@ function displayName(athlete: CompareAthlete): string {
   return name;
 }
 
-/** The compare page: every athlete's runs done and distance. */
+/** The compare page: runs done and distance for athletes who share. */
 export default function CompareDashboard() {
   const [data, setData] = useState<CompareResponse | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
@@ -74,7 +74,7 @@ export default function CompareDashboard() {
           <ErrorCard error={error} onRetry={load} />
         ) : (
           <section className="card empty">
-            <p className="muted">Nobody has uploaded a plan yet.</p>
+            <p className="muted">Upload a plan to compare with other athletes.</p>
           </section>
         )}
         <PoweredByStrava />
@@ -88,8 +88,16 @@ export default function CompareDashboard() {
       {header}
       {error && <ErrorCard error={error} onRetry={load} />}
 
+      {!data.sharing && (
+        <SharingCard
+          sharing={false}
+          othersSharing={data.othersSharing}
+          onChanged={load}
+        />
+      )}
+
       <section className="card panel">
-        <h2>Where everyone is</h2>
+        <h2>{data.sharing ? "Where everyone is" : "Where you are"}</h2>
         <CompareTable athletes={data.athletes} />
         {data.unavailable.length > 0 && (
           <p className="muted small chart-note">
@@ -133,10 +141,94 @@ export default function CompareDashboard() {
         </p>
       </section>
 
+      {data.sharing && (
+        <SharingCard
+          sharing={true}
+          othersSharing={data.othersSharing}
+          onChanged={load}
+        />
+      )}
+
       <PoweredByStrava />
     </main>
   );
   return page;
+}
+
+// Sharing opt-in ------------------------------------------------------------
+
+/**
+ * Asks the athlete to opt in to sharing (before), or says what is shared
+ * and lets them stop (after). Sharing is two-way: you only see others if
+ * they can see you.
+ */
+function SharingCard(props: {
+  sharing: boolean;
+  othersSharing: number;
+  onChanged: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  /** Saves the new choice, then reloads the comparison. */
+  async function save(share: boolean) {
+    setBusy(true);
+    setFailed(false);
+    try {
+      const response = await fetch("/api/sharing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share }),
+      });
+      if (!response.ok) throw new Error("save failed");
+      props.onChanged();
+    } catch {
+      setFailed(true);
+    }
+    setBusy(false);
+  }
+
+  const others =
+    props.othersSharing === 1
+      ? "1 other athlete is sharing."
+      : `${props.othersSharing} other athletes are sharing.`;
+  const what =
+    "your first name, the share of your planned runs done and the distance you’ve run";
+  const card = props.sharing ? (
+    <section className="card panel sharing">
+      <p className="muted small">
+        You’re sharing {what} with other athletes who share.
+      </p>
+      <button
+        type="button"
+        className="button-quiet"
+        onClick={() => save(false)}
+        disabled={busy}
+      >
+        {busy ? "Saving…" : "Stop sharing"}
+      </button>
+      {failed && <p className="small error-text">Couldn’t save. Try again.</p>}
+    </section>
+  ) : (
+    <section className="card panel sharing">
+      <h2>Share your progress?</h2>
+      <p className="small">
+        To see other athletes here, share {what} with them. Only athletes who also share
+        can see it, and you can stop at any time.
+      </p>
+      <p className="muted small">{others}</p>
+      <button
+        type="button"
+        className="button-primary"
+        onClick={() => save(true)}
+        disabled={busy}
+      >
+        {busy ? "Saving…" : "Share my progress"}
+      </button>
+      {failed && <p className="small error-text">Couldn’t save. Try again.</p>}
+    </section>
+  );
+  return card;
 }
 
 // Summary table ------------------------------------------------------------
@@ -289,14 +381,16 @@ function MultiLineChart(props: ChartProps) {
 
   const chart = (
     <div className="chart">
-      <ul className="legend">
-        {athletes.map((a) => (
-          <li key={a.key}>
-            <span className="line-key" style={{ background: seriesColour(a.slot) }} />
-            {displayName(a)}
-          </li>
-        ))}
-      </ul>
+      {athletes.length > 1 && (
+        <ul className="legend">
+          {athletes.map((a) => (
+            <li key={a.key}>
+              <span className="line-key" style={{ background: seriesColour(a.slot) }} />
+              {displayName(a)}
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="chart-frame">
         <svg
           viewBox={`0 0 ${CHART.width} ${CHART.height}`}
