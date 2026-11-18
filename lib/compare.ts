@@ -1,16 +1,24 @@
-// Side-by-side progress for every athlete using the app: runs done and distance.
+// Side-by-side progress for every athlete using the app: runs done, strength
+// sessions done and distance.
 
 import { addDays } from "./dates";
 import { getStore } from "./db";
 import { isRunSession } from "./matching";
 import { computeWeeks, loadContext, today as todayDate } from "./progress";
-import { countRuns, cumulativeDistance } from "./stats";
-import type { WeekResult } from "./types";
+import {
+  countRuns,
+  countStrength,
+  cumulativeDistance,
+  isStrengthSession,
+  wasDone,
+} from "./stats";
+import type { PlanSession, WeekResult } from "./types";
 
 export interface AthleteSeries {
   firstDate: string;
   lastDate: string;
   runsPct: Map<string, number>; // date -> % of the plan's runs done by then
+  strengthPct: Map<string, number>; // date -> % of the plan's strength sessions done
   km: Map<string, number>; // date -> cumulative km run in the plan by then
 }
 
@@ -22,9 +30,14 @@ export interface CompareAthlete {
   runsDone: number; // done in full or partly
   runsDue: number;
   runsTotal: number;
+  strengthDone: number; // done in full or partly
+  strengthDue: number;
+  strengthTotal: number;
   km: number;
   plannedToDateKm: number;
+  plannedTotalKm: number; // the whole plan's distance
   runsPct: (number | null)[]; // aligned with CompareResponse.dates
+  strengthPct: (number | null)[];
   distanceKm: (number | null)[];
 }
 
@@ -46,37 +59,58 @@ const CACHE_TTL_MS = 10 * 60 * 1000;
 const cache = new Map<string, { at: number; weeks: WeekResult[] }>();
 
 /**
- * Daily cumulative runs-done % and km for one athlete, up to today. A run
- * counts on the day it was run (its first matched activity), or on its
- * planned date when ticked off by hand.
+ * Daily cumulative % of the sessions picked by `include` that were done, over
+ * `days`. A session counts on the day it was run (its first matched activity),
+ * or on its planned date when ticked off by hand (as strength always is), but
+ * never later than today. Sessions done before the first day count from it.
+ */
+function cumulativeShare(
+  weeks: WeekResult[],
+  days: string[],
+  today: string,
+  include: (session: PlanSession) => boolean,
+): Map<string, number> {
+  const results = weeks.flatMap((w) => w.sessions).filter((r) => include(r.session));
+  const total = Math.max(results.length, 1);
+  const doneByDay = new Map<string, number>();
+  for (const r of results.filter(wasDone)) {
+    const ranOn = r.matched[0]?.date ?? r.session.date;
+    const day = ranOn > today ? today : ranOn;
+    doneByDay.set(day, (doneByDay.get(day) ?? 0) + 1);
+  }
+  let done = [...doneByDay]
+    .filter(([d]) => d < (days[0] ?? today))
+    .reduce((a, [, n]) => a + n, 0);
+  const share = new Map<string, number>();
+  for (const day of days) {
+    done += doneByDay.get(day) ?? 0;
+    share.set(day, Math.round((done / total) * 1000) / 10);
+  }
+  return share;
+}
+
+/**
+ * Daily cumulative runs-done %, strength-done % and km for one athlete, up to
+ * today.
  */
 export function athleteSeries(weeks: WeekResult[], today: string): AthleteSeries {
-  const results = weeks
-    .flatMap((w) => w.sessions)
-    .filter((r) => isRunSession(r.session));
-  const total = Math.max(results.length, 1);
-  const ranByDay = new Map<string, number>();
-  for (const r of results) {
-    if (r.status === "done" || r.status === "partial") {
-      const day = r.matched[0]?.date ?? r.session.date;
-      ranByDay.set(day, (ranByDay.get(day) ?? 0) + 1);
-    }
-  }
   const firstDate = weeks[0]?.weekCommencing ?? today;
   const lastDate = weeks[weeks.length - 1]?.weekEnding ?? today;
-  // Runs done early (before the plan starts) count from day one.
-  let ran = [...ranByDay].filter(([d]) => d < firstDate).reduce((a, [, n]) => a + n, 0);
-  const runsPct = new Map<string, number>();
   const km = new Map<string, number>();
   for (const point of cumulativeDistance(weeks, today)) {
     if (point.actualKm === null) {
       break;
     }
-    ran += ranByDay.get(point.date) ?? 0;
-    runsPct.set(point.date, Math.round((ran / total) * 1000) / 10);
     km.set(point.date, point.actualKm);
   }
-  const series: AthleteSeries = { firstDate, lastDate, runsPct, km };
+  const days = [...km.keys()];
+  const series: AthleteSeries = {
+    firstDate,
+    lastDate,
+    runsPct: cumulativeShare(weeks, days, today, isRunSession),
+    strengthPct: cumulativeShare(weeks, days, today, isStrengthSession),
+    km,
+  };
   return series;
 }
 
@@ -107,6 +141,7 @@ export function buildComparison(
   const dates = first && last ? dateRange(first, last) : [];
   const athletes = withSeries.map((a) => {
     const counts = countRuns(a.weeks, today);
+    const strength = countStrength(a.weeks, today);
     const distance = cumulativeDistance(a.weeks, today);
     const beforeToday = distance.filter((p) => p.date < today);
     const upToToday = distance.filter((p) => p.date <= today);
@@ -118,9 +153,14 @@ export function buildComparison(
       runsDone: counts.done + counts.partial,
       runsDue: counts.due,
       runsTotal: counts.total,
+      strengthDone: strength.done + strength.partial,
+      strengthDue: strength.due,
+      strengthTotal: strength.total,
       km: upToToday[upToToday.length - 1]?.actualKm ?? 0,
       plannedToDateKm: beforeToday[beforeToday.length - 1]?.expectedKm ?? 0,
+      plannedTotalKm: distance[distance.length - 1]?.expectedKm ?? 0,
       runsPct: dates.map((d) => a.series.runsPct.get(d) ?? null),
+      strengthPct: dates.map((d) => a.series.strengthPct.get(d) ?? null),
       distanceKm: dates.map((d) => a.series.km.get(d) ?? null),
     };
     return athlete;

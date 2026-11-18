@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { matchPlan } from "../lib/matching";
 import {
   countRuns,
+  countStrength,
   cumulativeDistance,
   fastestSession,
   halfMarathons,
@@ -77,6 +78,47 @@ describe("countRuns", () => {
   it("counts run sessions only, with done, partial and due", () => {
     const counts = countRuns(weeks, TODAY);
     expect(counts).toEqual({ total: 6, due: 4, done: 3, partial: 1 });
+  });
+});
+
+describe("countStrength", () => {
+  // A second strength session in week 2, so there is one due and one to come.
+  const withStrength: Plan = structuredClone(plan);
+  withStrength.weeks[1].sessions.push(s("w2-strength", "2026-11-27", "strength"));
+
+  it("counts strength sessions only, ticked by hand", () => {
+    const ticked = matchPlan(
+      withStrength,
+      activities,
+      [{ sessionId: "w1-strength", status: "partial", activityIds: null }],
+      TODAY,
+    );
+    expect(countStrength(ticked, TODAY)).toEqual({
+      total: 2,
+      due: 1,
+      done: 0,
+      partial: 1,
+    });
+    expect(seasonStats(ticked, TODAY).strength.partial).toBe(1);
+  });
+
+  it("counts a session ticked early as due", () => {
+    const early = matchPlan(
+      withStrength,
+      activities,
+      [{ sessionId: "w2-strength", status: "done", activityIds: null }],
+      TODAY,
+    );
+    expect(countStrength(early, TODAY)).toEqual({
+      total: 2,
+      due: 2,
+      done: 1,
+      partial: 0,
+    });
+  });
+
+  it("leaves strength out of the run counts", () => {
+    expect(countRuns(weeks, TODAY).total).toBe(6);
   });
 });
 

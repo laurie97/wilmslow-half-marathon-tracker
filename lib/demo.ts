@@ -12,11 +12,12 @@ import type { Activity, Plan, PlanSession } from "./types";
 export const DEMO_ATHLETE_ID = 1;
 
 // Other demo athletes on the same plan, for the compare page: each runs a
-// different share of the planned distance and skips every nth run.
+// different share of the planned distance, skips every nth run and ticks off
+// every nth strength session.
 const DEMO_FRIENDS = [
-  { id: 2, firstname: "Sam", scale: 0.9, skipEvery: 4 },
-  { id: 3, firstname: "Priya", scale: 1.12, skipEvery: 9 },
-  { id: 4, firstname: "Jordan", scale: 0.75, skipEvery: 3 },
+  { id: 2, firstname: "Sam", scale: 0.9, skipEvery: 4, strengthEvery: 2 },
+  { id: 3, firstname: "Priya", scale: 1.12, skipEvery: 9, strengthEvery: 1 },
+  { id: 4, firstname: "Jordan", scale: 0.75, skipEvery: 3, strengthEvery: 3 },
 ];
 const DEFAULT_DEMO_TODAY = "2026-12-03";
 
@@ -55,14 +56,29 @@ export async function seedDemoStore(store: Store): Promise<void> {
     const strength = week.sessions.filter(
       (s) => s.type === "strength" && s.date < today,
     );
-    // Tick Monday strength every week, and Friday's only in week 1.
+    // Tick the first strength session every week (the one in week 2 only
+    // partly), and the second only in week 1.
     const ticks = index === 0 ? strength : strength.slice(0, 1);
     for (const session of ticks) {
       await store.setOverride(DEMO_ATHLETE_ID, {
         sessionId: session.id,
-        status: "done",
+        status: index === 1 ? "partial" : "done",
         activityIds: null,
       });
+    }
+  }
+  const pastStrength = plan.weeks
+    .flatMap((w) => w.sessions)
+    .filter((s) => s.type === "strength" && s.date < today);
+  for (const friend of DEMO_FRIENDS) {
+    for (const [index, session] of pastStrength.entries()) {
+      if (index % friend.strengthEvery === 0) {
+        await store.setOverride(friend.id, {
+          sessionId: session.id,
+          status: "done",
+          activityIds: null,
+        });
+      }
     }
   }
 }

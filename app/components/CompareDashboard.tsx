@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { CompareAthlete, CompareResponse } from "@/lib/compare";
 import { formatShortDate } from "@/lib/format";
-import { CHART, PLOT_H, indexAt, niceStep, weekTicks, xAt } from "./chart";
+import { CHART, PLOT_H, indexAt, niceAxis, weekTicks, xAt } from "./chart";
 import ErrorCard, { type ApiError } from "./ErrorCard";
 import PoweredByStrava from "./PoweredByStrava";
 
@@ -25,7 +25,19 @@ function displayName(athlete: CompareAthlete): string {
   return name;
 }
 
-/** The compare page: every athlete's runs done and distance. */
+/** The axis reference for the distance chart: the viewer's plan total, else the largest. */
+function planTotal(athletes: CompareAthlete[]): { value: number; label: string } {
+  const you = athletes.find((a) => a.isYou);
+  const value =
+    you?.plannedTotalKm ?? Math.max(...athletes.map((a) => a.plannedTotalKm));
+  const reference = {
+    value,
+    label: `${you ? "Your plan" : "Plan"} ${Math.round(value)} km`,
+  };
+  return reference;
+}
+
+/** The compare page: every athlete's runs done, strength sessions and distance. */
 export default function CompareDashboard() {
   const [data, setData] = useState<CompareResponse | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
@@ -83,6 +95,8 @@ export default function CompareDashboard() {
     return emptyPage;
   }
 
+  const withStrength = data.athletes.filter((a) => a.strengthTotal > 0);
+  const reference = planTotal(data.athletes);
   const page = (
     <main className="page">
       {header}
@@ -90,7 +104,7 @@ export default function CompareDashboard() {
 
       <section className="card panel">
         <h2>Where everyone is</h2>
-        <CompareTable athletes={data.athletes} />
+        <CompareTable athletes={data.athletes} showStrength={withStrength.length > 0} />
         {data.unavailable.length > 0 && (
           <p className="muted small chart-note">
             Couldn’t load {data.unavailable.join(", ")} from Strava just now.
@@ -106,6 +120,7 @@ export default function CompareDashboard() {
           athletes={data.athletes}
           values={(a) => a.runsPct}
           format={(v) => `${Math.round(v)}%`}
+          tick={(v) => `${v}%`}
           yMax={100}
           label="Share of each athlete’s planned runs done, over time"
           tableHeading="Runs done"
@@ -116,6 +131,27 @@ export default function CompareDashboard() {
         </p>
       </section>
 
+      {withStrength.length > 0 && (
+        <section className="card panel">
+          <h2>Strength sessions</h2>
+          <MultiLineChart
+            dates={data.dates}
+            today={data.today}
+            athletes={withStrength}
+            values={(a) => a.strengthPct}
+            format={(v) => `${Math.round(v)}%`}
+            tick={(v) => `${v}%`}
+            yMax={100}
+            label="Share of each athlete’s planned strength sessions done, over time"
+            tableHeading="Strength sessions"
+          />
+          <p className="muted small chart-note">
+            Strength sessions ticked as done or partly done, as a share of all the
+            strength sessions in each athlete’s plan. Each counts on its planned day.
+          </p>
+        </section>
+      )}
+
       <section className="card panel">
         <h2>Distance</h2>
         <MultiLineChart
@@ -124,12 +160,15 @@ export default function CompareDashboard() {
           athletes={data.athletes}
           values={(a) => a.distanceKm}
           format={(v) => `${v.toFixed(1)} km`}
-          label="Cumulative distance run by each athlete, over time"
+          tick={(v) => `${v}`}
+          yMax={Math.max(...data.athletes.map((a) => a.plannedTotalKm))}
+          reference={reference}
+          label="Cumulative distance run by each athlete, over time, up to the plan’s total"
           tableHeading="Distance"
         />
         <p className="muted small chart-note">
           Every run from the first week of each athlete’s plan, matched to a session or
-          not.
+          not. The axis goes up to the whole plan’s distance.
         </p>
       </section>
 
@@ -141,21 +180,33 @@ export default function CompareDashboard() {
 
 // Summary table ------------------------------------------------------------
 
-/** One row per athlete: runs done and distance so far. */
-function CompareTable({ athletes }: { athletes: CompareAthlete[] }) {
+/** Whole-number % of `done` out of `total`, or 0 with nothing planned. */
+function percent(done: number, total: number): number {
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  return pct;
+}
+
+/** One row per athlete: runs done, strength sessions done and distance so far. */
+function CompareTable({
+  athletes,
+  showStrength,
+}: {
+  athletes: CompareAthlete[];
+  showStrength: boolean;
+}) {
   const table = (
     <table className="compare-table">
       <thead>
         <tr>
           <th>Athlete</th>
-          <th>Runs done</th>
+          <th>Runs</th>
+          {showStrength && <th>Strength</th>}
           <th>Distance</th>
         </tr>
       </thead>
       <tbody>
         {athletes.map((a) => {
-          const pct =
-            a.runsTotal > 0 ? Math.round((a.runsDone / a.runsTotal) * 100) : 0;
+          const pct = percent(a.runsDone, a.runsTotal);
           const row = (
             <tr key={a.key} className={a.isYou ? "is-you" : undefined}>
               <td>
@@ -173,6 +224,20 @@ function CompareTable({ athletes }: { athletes: CompareAthlete[] }) {
                   {a.runsDone} of {a.runsTotal}
                 </span>
               </td>
+              {showStrength && (
+                <td>
+                  {a.strengthTotal > 0 ? (
+                    <>
+                      <strong>{percent(a.strengthDone, a.strengthTotal)}%</strong>
+                      <span className="muted small block">
+                        {a.strengthDone} of {a.strengthTotal}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="muted">–</span>
+                  )}
+                </td>
+              )}
               <td>
                 <strong>{a.km.toFixed(1)} km</strong>
                 <span className="muted small block">
@@ -197,7 +262,9 @@ interface ChartProps {
   athletes: CompareAthlete[];
   values: (athlete: CompareAthlete) => (number | null)[];
   format: (value: number) => string;
-  yMax?: number;
+  tick: (value: number) => string; // y-axis label
+  yMax?: number; // the axis reaches at least this, e.g. 100% or the plan's total km
+  reference?: { value: number; label: string }; // a dashed line, e.g. the plan's total
   label: string;
   tableHeading: string;
 }
@@ -248,9 +315,13 @@ function MultiLineChart(props: ChartProps) {
   const [hover, setHover] = useState<number | null>(null);
   const n = dates.length;
   const series = athletes.map((a) => ({ athlete: a, values: values(a) }));
-  const maxValue = Math.max(...series.flatMap((s) => s.values.map((v) => v ?? 0)), 1);
-  const step = props.yMax ? 25 : niceStep(maxValue);
-  const top = props.yMax ?? Math.ceil(maxValue / step) * step;
+  const maxValue = Math.max(
+    ...series.flatMap((s) => s.values.map((v) => v ?? 0)),
+    props.yMax ?? 0,
+    1,
+  );
+  const { step, top } = niceAxis(maxValue);
+  const reference = props.reference;
   const x = (i: number): number => xAt(i, n);
   const y = (v: number): number => CHART.top + PLOT_H - (v / top) * PLOT_H;
   const baseline = y(0);
@@ -316,10 +387,29 @@ function MultiLineChart(props: ChartProps) {
                 className="grid"
               />
               <text x={CHART.left - 6} y={y(v) + 3.5} className="tick" textAnchor="end">
-                {props.yMax ? `${v}%` : v}
+                {props.tick(v)}
               </text>
             </g>
           ))}
+          {reference && (
+            <g>
+              <line
+                x1={CHART.left}
+                x2={CHART.width - CHART.right}
+                y1={y(reference.value)}
+                y2={y(reference.value)}
+                className="goal-line"
+              />
+              <text
+                x={CHART.width - CHART.right}
+                y={y(reference.value) - 4}
+                className="tick"
+                textAnchor="end"
+              >
+                {reference.label}
+              </text>
+            </g>
+          )}
           {xTicks.map((t) => (
             <text
               key={t.date}
