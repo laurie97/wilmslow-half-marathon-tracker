@@ -97,7 +97,7 @@ export default function ProgressDashboard() {
 
       <section className="ralph-says" aria-label="Ralph says">
         <RaccoonLogo size={64} />
-        <p className="speech">{ralphSays(stats.runs)}</p>
+        <p className="speech">{ralphSays(stats.runs, stats.strength)}</p>
       </section>
 
       <div className={stats.strength.total > 0 ? "dials dials-pair" : "dials"}>

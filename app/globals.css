@@ -1751,3 +1751,34 @@ h1,
   align-items: flex-end;
   gap: 4px;
 }
+
+/* Copy for Strava (interval and tempo sheet) ---------------------------- */
+
+.strava-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.strava-copy textarea {
+  width: 100%;
+  resize: none;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+.strava-copy .button-quiet {
+  justify-self: start;
+  color: var(--text);
+}
+
+.strava-copy .button-quiet.copied {
+  border-color: var(--done);
+  color: var(--done-ink);
+}
