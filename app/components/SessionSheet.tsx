@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { dayName } from "@/lib/dates";
 import { formatKm, formatShortDate } from "@/lib/format";
 import { isRunSession } from "@/lib/matching";
 import type { PlanSummary } from "@/lib/progress";
+import { stravaText } from "@/lib/strava-text";
 import type { Exercise, ManualStatus, SessionResult, WeekResult } from "@/lib/types";
 import { STATUS_LABELS } from "./WeekView";
 
@@ -41,6 +42,66 @@ function exerciseLine(exercise: Exercise, sets: number | undefined): string {
   const perSide = exercise.per_side ? " per side" : "";
   const line = `${sets ? `${sets} × ` : ""}${amount}${perSide}`;
   return line;
+}
+
+/** Copies text to the clipboard, falling back to selecting a textarea. */
+async function copyText(
+  text: string,
+  field: HTMLTextAreaElement | null,
+): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    if (!field) return false;
+    field.select();
+    const copied = document.execCommand("copy");
+    return copied;
+  }
+}
+
+/** The session and rep paces as text to paste into a Strava description. */
+function StravaCopy({ text }: { text: string }) {
+  const field = useRef<HTMLTextAreaElement>(null);
+  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
+
+  useEffect(() => {
+    if (state === "idle") return;
+    const timer = window.setTimeout(() => setState("idle"), 2000);
+    const cleanup = () => window.clearTimeout(timer);
+    return cleanup;
+  }, [state]);
+
+  /** Copies the text and shows whether it worked. */
+  async function copy() {
+    const copied = await copyText(text, field.current);
+    setState(copied ? "copied" : "failed");
+  }
+
+  const labels = { idle: "Copy", copied: "Copied ✓", failed: "Select and copy" };
+  const block = (
+    <>
+      <h3 className="sheet-label">For Strava</h3>
+      <div className="strava-copy">
+        <textarea
+          ref={field}
+          readOnly
+          value={text}
+          rows={text.split("\n").length}
+          aria-label="Text for Strava"
+          onFocus={(e) => e.currentTarget.select()}
+        />
+        <button
+          type="button"
+          className={`button-quiet${state === "copied" ? " copied" : ""}`}
+          onClick={copy}
+        >
+          {labels[state]}
+        </button>
+      </div>
+    </>
+  );
+  return block;
 }
 
 /** Bottom sheet for correcting a session: status, which run, or a strength tick. */
@@ -121,6 +182,7 @@ export default function SessionSheet({
       : "Auto";
 
   const routine = session.routine ? plan.strengthRoutines[session.routine] : undefined;
+  const copyable = result.reps ? stravaText(session, result.reps) : null;
   const ticked = result.override?.status === "done";
 
   const sheet = (
@@ -149,6 +211,8 @@ export default function SessionSheet({
             {STATUS_LABELS[result.status]}
           </span>
         </p>
+
+        {copyable && <StravaCopy text={copyable} />}
 
         {isRun ? (
           <>
